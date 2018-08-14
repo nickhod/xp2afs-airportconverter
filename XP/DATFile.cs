@@ -13,7 +13,15 @@ namespace XP2AFSAirportConverter.XP
 
     public class DATFile
     {
+        public AirportHeader AirportHeader { get; set; }
         public LandRunway LandRunway { get; set; }
+    }
+
+    public enum AirportType
+    {
+        Airport,
+        SeaPlaneBase,
+        Helipad
     }
 
     public enum SurfaceType
@@ -132,6 +140,25 @@ namespace XP2AFSAirportConverter.XP
         Hangar,
         Misc,
 
+    }
+
+    public enum AirplaneType
+    {
+        Heavy,
+        Jets,
+        Turboprops,
+        Props,
+        Helos,
+        All
+           
+    }
+
+    public class AirportHeader
+    {
+        public double ElevationFeet { get; set; }
+        public string ICAOCode { get; set; }
+        public string Name { get; set; }
+        public AirportType AirportType { get; set; }
     }
 
     public class LandRunway
@@ -342,7 +369,9 @@ namespace XP2AFSAirportConverter.XP
 
         public double Heading { get; set; }
 
-        public string 
+        public TaxiLocationType TaxiLocationType { get; set; }
+
+        public AirplaneType AirplaneType { get; set; }
     }
 
     public class ATCRecorded
@@ -378,5 +407,10 @@ namespace XP2AFSAirportConverter.XP
     public class ATCDeparture
     {
 
+    }
+
+    public class Metadata
+    {
+        public Dictionary<string, string> Values { get; set; }
     }
 }

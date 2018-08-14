@@ -12,3 +12,5 @@
 /bin/Debug
 /.vs/XP2AFSAirportConvertor/v15/*.suo
 /.vs/XP2AFSAirportConverter/v15/*.suo
+/.vs/XP2AFSAirportConverter/v15/Server/sqlite3
+/XP2AFSAirportConverter.csproj.user

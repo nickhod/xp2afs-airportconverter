@@ -53,12 +53,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AFS\TGIFile.cs" />
     <Compile Include="AFS\TOCFile.cs" />
     <Compile Include="Common\ConverterAction.cs" />
     <Compile Include="Common\BetterWebClient.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Common\Settings.cs" />
+    <Compile Include="Converters\DATToTSCConverter.cs" />
     <Compile Include="SceneryGateway\Models\Airport.cs" />
     <Compile Include="SceneryGateway\Models\AirportResponse.cs" />
     <Compile Include="SceneryGateway\Models\Metadata.cs" />

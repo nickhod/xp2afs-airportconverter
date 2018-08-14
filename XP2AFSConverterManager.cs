@@ -12,6 +12,7 @@ using System.Web;
 using System.Xml;
 using System.Xml.Serialization;
 using XP2AFSAirportConverter.Common;
+using XP2AFSAirportConverter.Converters;
 using XP2AFSAirportConverter.Models;
 using XP2AFSAirportConverter.SceneryGateway;
 using XP2AFSAirportConverter.SceneryGateway.Models;
@@ -22,11 +23,23 @@ namespace XP2AFSAirportConverter
     public class XP2AFSConverterManager
     {
         private readonly ILog log = LogManager.GetLogger("XP2AFSAirportConverter");
-        private List<ConverterAction> actions;
         private SceneryGatewayApi sceneryGatewayApi;
         private Settings settings;
 
         private Dictionary<string, AirportListItem> airportLookup;
+
+        private List<ConverterAction> actions;
+        private List<string> icaoCodes;
+
+        private DATToTSCConverter datToTSCConverter;
+
+        public XP2AFSConverterManager()
+        {
+            this.settings = new Settings();
+            this.datToTSCConverter = new DATToTSCConverter();
+            this.actions = new List<ConverterAction>();
+            this.icaoCodes = new List<string>();
+        }
 
         public void RunActions(string[] args)
         {
@@ -34,42 +47,63 @@ namespace XP2AFSAirportConverter
             log.Info("Starting XP2AFSAirportConverter");
             log.Info("------------------------------------------------------------");
 
-            this.settings = new Settings();
-
             this.CreateDirectories();
 
-            this.actions = new List<ConverterAction>();
+            this.ParseArgs(args);
 
             this.sceneryGatewayApi = new SceneryGatewayApi();
-
-            // TODO get from command line
-            //actions.Add(ConverterAction.GetAirportList);
-            //actions.Add(ConverterAction.DownloadAirports);
-            actions.Add(ConverterAction.ConvertAirports);
-
-            List<string> icaoCodes = new List<string>();
-            icaoCodes.Add("EGFF");
-            //icaoCodes.Add("YBSU");
 
             foreach (ConverterAction action in this.actions)
             {
                 switch(action)
                 {
                     case ConverterAction.ConvertAirports:
+                        log.Info("Starting Convert Airports action");
                         this.ConvertAirports(icaoCodes);
                         break;
                     case ConverterAction.DownloadAirports:
-                        log.Info("Starting DownloadAirports action");
+                        log.Info("Starting Download Airports action");
                         this.DownloadAirports(icaoCodes);
                         break;
                     case ConverterAction.GetAirportList:
-                        log.Info("Starting GetAirportList action");
+                        log.Info("Starting Get Airport List action");
                         this.GetAirportList();
                         break;
                       
                 }
             }
 
+        }
+
+        private void ParseArgs(string[] args)
+        {
+            if (args.Length > 0)
+            {
+                switch(args[0])
+                {
+                    case "getlist":
+                        this.actions.Add(ConverterAction.GetAirportList);
+                        break;
+                    case "download":
+                        this.actions.Add(ConverterAction.DownloadAirports);
+                        break;
+                    case "convert":
+                        this.actions.Add(ConverterAction.ConvertAirports);
+                        break;
+                }
+
+                if (args.Length > 1)
+                {
+                    var icaoCodesTemp = args[1].Split(',');
+                    foreach (var icaoCode in icaoCodesTemp)
+                    {
+                        if (icaoCode.ToLower() != "all")
+                        {
+                            this.icaoCodes.Add(icaoCode.ToUpper());
+                        }
+                    }
+                }
+            }
         }
 
         private void CreateDirectories()
@@ -260,7 +294,28 @@ namespace XP2AFSAirportConverter
             var airportFilename = airportXPFullDirectory + @"\airport.xml";
             var airportSceneryFilename = airportXPFullDirectory + @"\scenery.xml";
 
-            var datFile = this.GetDATFileFromXPZip(icaoCode, airportZipFilename);
+            var airportAFSFullDirectory = this.GetAirportAFSFullDirectory(icaoCode);
+            var tmcFilename = airportAFSFullDirectory + @"\" + icaoCode + ".tmc";
+
+            if (File.Exists(airportZipFilename))
+            {
+                var datFile = this.GetDATFileFromXPZip(icaoCode, airportZipFilename);
+
+                var tscFile = this.datToTSCConverter.Convert(datFile);
+                var tscFileString = tscFile.ToString();
+
+                if (!Directory.Exists(airportAFSFullDirectory))
+                {
+                    Directory.CreateDirectory(airportAFSFullDirectory);
+                }
+
+                File.WriteAllText(tmcFilename, tscFileString);
+
+            }
+            else
+            {
+                log.ErrorFormat("Could not find the data for airport {0} make sure it is downloaded", icaoCode);
+            }
         }
 
         private string GetAirportXPFullDirectory(Airport airport)
@@ -274,6 +329,13 @@ namespace XP2AFSAirportConverter
         {
             var airportFirstLetter = icaoCode[0];
             var airportFullDirectory = this.settings.XPlaneXP2AFSConverterFolder + airportFirstLetter + @"\" + icaoCode;
+            return airportFullDirectory;
+        }
+
+        private string GetAirportAFSFullDirectory(string icaoCode)
+        {
+            var airportFirstLetter = icaoCode[0];
+            var airportFullDirectory = this.settings.AFSXP2AFSConverterFolder + airportFirstLetter + @"\" + icaoCode;
             return airportFullDirectory;
         }
 
