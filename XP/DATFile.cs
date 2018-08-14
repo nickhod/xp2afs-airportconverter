@@ -16,11 +16,6 @@ namespace XP2AFSAirportConverter.XP
         public LandRunway LandRunway { get; set; }
     }
 
-    public static class RowCode
-    {
-        public static int Land_Airport_Header = 1;
-    }
-
     public enum SurfaceType
     {
         Asphalt = 1,
@@ -96,6 +91,49 @@ namespace XP2AFSAirportConverter.XP
 
     }
 
+    public enum BeaconType
+    {
+        NoBeacon = 0,
+        WhiteGreenFlashing = 1,
+        WhiteYellowFlashing = 2,
+        GreenYelloWhiteFlashing = 3,
+        WhiteWhiteGreenFlashing = 4
+    }
+
+    public enum SignSize
+    {
+        SmallTaxiwaySign = 1,
+        MediumTaxiwaySign = 2,
+        LargeTaxiwaySign = 3,
+        LargeDistanceRemainingSignOnRunwayEdge = 4,
+        SmallDistanceRemainingSignOnRunwayEdge = 5,
+
+    }
+
+    public enum LightingObjectType
+    {
+        VASI = 1,
+        PAPI4L = 2,
+        PAPI4R = 3,
+        SpaceShuttlePAPI =4,
+        TriColourVASI = 5,
+        RunwayGuard = 6
+    }
+
+    public enum Direction
+    {
+        Left,
+        Right
+    }
+
+    public enum TaxiLocationType
+    {
+        Gate,
+        Hangar,
+        Misc,
+
+    }
+
     public class LandRunway
     {
         public double Width { get; set; }
@@ -156,16 +194,24 @@ namespace XP2AFSAirportConverter.XP
 
     public class Pavement
     {
-
+        public IList<Node> Nodes { get; set; }
+        public SurfaceType SurfaceCode { get; set; }
+        public double Smoothness { get; set; }
+        public double Orientation { get; set; }
+        public string Description { get; set; }
     }
 
     public class LinearFeature
     {
+        public string Description { get; set; }
+        public IList<Node> Nodes { get; set; }
 
     }
 
     public class AirportBoundary
     {
+        public string Description { get; set; }
+        public IList<Node> Nodes { get; set; }
 
     }
 
@@ -179,39 +225,59 @@ namespace XP2AFSAirportConverter.XP
         public bool End { get; set; }
         public bool CloseLoop { get; set; }
 
-        public LineType LineType { get;set }
+        public LineType LineType { get; set; }
     }
 
 
 
     public class Viewpoint
     {
-
+        public double Latitude { get; set; }
+        public double Longitude { get; set; }
+        public double HeightInFeet { get; set; }
+        public string Name { get; set; }
     }
 
     public class StarupLocationp
     {
-
+        public double Latitude { get; set; }
+        public double Longitude { get; set; }
+        public double Heading { get; set; }
+        public string Name { get; set; }
     }
 
     public class LightBeacon
     {
-
+        public double Latitude { get; set; }
+        public double Longitude { get; set; }
+        public BeaconType BeaconType { get; set; }
+        public string Name { get; set; }
     }
 
     public class Windsock
     {
-
+        public double Latitude { get; set; }
+        public double Longitude { get; set; }
+        public bool IsIlluminated { get; set; }
+        public string Name { get; set; }
     }
 
     public class Sign
     {
-
+        public double Latitude { get; set; }
+        public double Longitude { get; set; }
+        public double Orientation { get; set; }
     }
 
-    public class LightinObject
+    public class LightingObject
     {
-
+        public double Latitude { get; set; }
+        public double Longitude { get; set; }
+        public LightingObjectType LightingObjectType { get; set; }
+        public double Orientation { get; set; }
+        public double VisualGlideslopeAngle { get; set; }
+        public string AssociatedRunwayNumber { get; set; }
+        public string Description { get; set; }
     }
 
     public class TrafficFlow
@@ -245,7 +311,8 @@ namespace XP2AFSAirportConverter.XP
 
     public class VFRPatternRule
     {
-
+        public string Runway { get; set; }
+        public Direction Direction { get; set; }
     }
 
     public class TaxiRoutingNetwork
@@ -270,7 +337,12 @@ namespace XP2AFSAirportConverter.XP
 
     public class TaxiLocation
     {
+        public double Latitude { get; set; }
+        public double Longitude { get; set; }
 
+        public double Heading { get; set; }
+
+        public string 
     }
 
     public class ATCRecorded
