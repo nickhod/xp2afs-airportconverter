@@ -14,7 +14,8 @@ namespace XP2AFSAirportConverter.XP
     public class DATFile
     {
         public AirportHeader AirportHeader { get; set; }
-        public LandRunway LandRunway { get; set; }
+        public IList<LandRunway> LandRunways { get; set; }
+        public IList<WaterRunway> WaterRunways { get; set; }
     }
 
     public enum AirportType
