@@ -55,6 +55,7 @@
   <ItemGroup>
     <Compile Include="AFS\TGIFile.cs" />
     <Compile Include="AFS\TOCFile.cs" />
+    <Compile Include="Common\ArrayExtensions.cs" />
     <Compile Include="Common\ConverterAction.cs" />
     <Compile Include="Common\BetterWebClient.cs">
       <SubType>Component</SubType>

@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using XP2AFSAirportConverter.Common;
 
 namespace XP2AFSAirportConverter.XP
 {
@@ -74,7 +75,7 @@ http://developer.x-plane.com/wp-content/uploads/2015/11/XP-APT1000-Spec.pdf
 
         private DATFile datFile;
 
-        public DATFile Parse(string data)
+        public DATFile ParseFromString(string data)
         {
             this.datFile = new DATFile();
 
@@ -322,8 +323,9 @@ http://developer.x-plane.com/wp-content/uploads/2015/11/XP-APT1000-Spec.pdf
                 }
 
                 // The next two chunks of data are the runway ends
-                string[] end1Data = data;
-                string[] end2Data = data;
+                // Each end is 9 values
+                string[] end1Data = data.SubArray(8, 9);
+                string[] end2Data = data.SubArray(17, 9);
 
                 landRunway.End1 = ParseLandRunwayEnd(end1Data);
                 landRunway.End2 = ParseLandRunwayEnd(end2Data);
@@ -345,38 +347,231 @@ http://developer.x-plane.com/wp-content/uploads/2015/11/XP-APT1000-Spec.pdf
             var landRunwayEnd = new LandRunwayEnd();
 
             // 0 - Runway number
+            landRunwayEnd.Number = data[0];
 
             // 1 - Lat
+            double latitude;
+            if (double.TryParse(data[1], out latitude))
+            {
+                landRunwayEnd.Latitude = latitude;
+            }
+            else
+            {
+                log.Error("Error parsing runway end latitude");
+            }
 
             // 2 - Lon
+            double longitude;
+            if (double.TryParse(data[2], out longitude))
+            {
+                landRunwayEnd.Longitude = longitude;
+            }
+            else
+            {
+                log.Error("Error parsing runway end longitude");
+            }
 
             // 3 - Length of displaced threshold
+            double displacedThreshold;
+            if (double.TryParse(data[3], out displacedThreshold))
+            {
+                landRunwayEnd.LengthOfDisplacedThreshold = displacedThreshold;
+            }
+            else
+            {
+                log.Error("Error parsing runway end displaced threshold");
+            }
 
             // 4 - Length of overrun
+            double overrun;
+            if (double.TryParse(data[4], out overrun))
+            {
+                landRunwayEnd.LengthOfOverrun = overrun;
+            }
+            else
+            {
+                log.Error("Error parsing runway end overrun");
+            }
 
             // 5 - Markings
+            int markingsInt;
+            if (int.TryParse(data[5], out markingsInt))
+            {
+                landRunwayEnd.RunwayMarkings = (RunwayMarkings)markingsInt;
+            }
+            else
+            {
+                log.Error("Error parsing runway end markings");
+            }
 
             // 6 - Approach lighting
+            int approachLightingInt;
+            if (int.TryParse(data[6], out approachLightingInt))
+            {
+                landRunwayEnd.ApproachLighting = (ApproachLighting)approachLightingInt;
+            }
+            else
+            {
+                log.Error("Error parsing runway end approach lighting");
+            }
 
             // 7 - Flag for touchdown zone
+            landRunwayEnd.FlagForRunwayTouchdownZoneLighting = false;
+            if (data[7] == "1")
+            {
+                landRunwayEnd.FlagForRunwayTouchdownZoneLighting = true;
+            }
+
 
             // 8 - Code for runway identifier lights
+            int identifierLights;
+            if (int.TryParse(data[8], out identifierLights))
+            {
+                landRunwayEnd.REILLights = (REILLights)identifierLights;
+            }
+            else
+            {
+                log.Error("Error parsing runway end identifier lights");
+            }
 
             return landRunwayEnd;
         }
 
-        private void ParseTemplate(string[] data)
+        //private void ParseTemplate(string[] data)
+        //{
+        //    if (data.Length >= 6)
+        //    {
+
+        //    }
+        //    {
+        //        log.ErrorFormat("Airport header has {0} data elements, which is too few.", data.Length);
+        //    }
+        //}
+
+        private void ParseMetadata(string[] data)
         {
             if (data.Length >= 6)
             {
 
             }
             {
-                log.ErrorFormat("Airport header has {0} data elements, which is too few.", data.Length);
+                log.ErrorFormat("Metadata has {0} data elements, which is too few.", data.Length);
             }
         }
 
-        public Boolean IsNumber(String s)
+        private void ParseSign(string[] data)
+        {
+            if (data.Length >= 6)
+            {
+
+            }
+            {
+                log.ErrorFormat("Sign has {0} data elements, which is too few.", data.Length);
+            }
+        }
+
+        private void ParseLightingObject(string[] data)
+        {
+            if (data.Length >= 6)
+            {
+
+            }
+            {
+                log.ErrorFormat("Lighting object has {0} data elements, which is too few.", data.Length);
+            }
+        }
+
+        private void ParseLightBeacon(string[] data)
+        {
+            if (data.Length >= 6)
+            {
+
+            }
+            {
+                log.ErrorFormat("Light beacon has {0} data elements, which is too few.", data.Length);
+            }
+        }
+
+        private void ParseWindSock(string[] data)
+        {
+            if (data.Length >= 6)
+            {
+
+            }
+            {
+                log.ErrorFormat("Windsock has {0} data elements, which is too few.", data.Length);
+            }
+        }
+
+        private void ParseViewpoint(string[] data)
+        {
+            if (data.Length >= 6)
+            {
+
+            }
+            {
+                log.ErrorFormat("Viewpoint has {0} data elements, which is too few.", data.Length);
+            }
+        }
+
+
+
+        private void ParsePavement(string[] data)
+        {
+            if (data.Length >= 6)
+            {
+
+            }
+            {
+                log.ErrorFormat("Pavement has {0} data elements, which is too few.", data.Length);
+            }
+        }
+
+        private void ParseNode(string[] data)
+        {
+            if (data.Length >= 6)
+            {
+
+            }
+            {
+                log.ErrorFormat("Node has {0} data elements, which is too few.", data.Length);
+            }
+        }
+
+        private void ParseStartupLocation(string[] data)
+        {
+            if (data.Length >= 6)
+            {
+
+            }
+            {
+                log.ErrorFormat("Startup location has {0} data elements, which is too few.", data.Length);
+            }
+        }
+
+        private void ParseTaxiLocation(string[] data)
+        {
+            if (data.Length >= 6)
+            {
+
+            }
+            {
+                log.ErrorFormat("Taxi location has {0} data elements, which is too few.", data.Length);
+            }
+        }
+
+        private void ParseVFRPatternRule(string[] data)
+        {
+            if (data.Length >= 6)
+            {
+
+            }
+            {
+                log.ErrorFormat("VRF Pattern rule has {0} data elements, which is too few.", data.Length);
+            }
+        }
+
+        private Boolean IsNumber(String s)
         {
             Boolean value = true;
             foreach (Char c in s.ToCharArray())

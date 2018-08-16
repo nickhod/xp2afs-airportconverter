@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace XP2AFSAirportConverter.Models
 {
-    class DSFFile
+    public class DSFFile
     {
     }
 }

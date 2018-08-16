@@ -1,4 +1,5 @@
-﻿using ICSharpCode.SharpZipLib.Zip;
+﻿using ICSharpCode.SharpZipLib.Core;
+using ICSharpCode.SharpZipLib.Zip;
 using log4net;
 using System;
 using System.Collections.Generic;
@@ -281,14 +282,20 @@ namespace XP2AFSAirportConverter
 
         private void ConvertAirports(List<string> icaoCodes)
         {
+            int i = 0;
             foreach (string icaoCode in icaoCodes)
             {
+                log.Info("------------------------------------------------------------");
+                log.InfoFormat("Converting airport {0} of {1}", i + 1, icaoCodes.Count());
+
                 this.ConvertAirport(icaoCode);
             }
         }
 
         private void ConvertAirport(string icaoCode)
         {
+            log.InfoFormat("Converting {0}", icaoCode);
+
             var airportXPFullDirectory = this.GetAirportXPFullDirectory(icaoCode);
             var airportZipFilename = airportXPFullDirectory + @"\" + icaoCode + ".zip";
             var airportFilename = airportXPFullDirectory + @"\airport.xml";
@@ -300,6 +307,7 @@ namespace XP2AFSAirportConverter
             if (File.Exists(airportZipFilename))
             {
                 var datFile = this.GetDATFileFromXPZip(icaoCode, airportZipFilename);
+                var dsfFile = this.GetDSFFileFromXPZip(icaoCode, airportZipFilename);
 
                 var tscFile = this.datToTSCConverter.Convert(datFile);
                 var tscFileString = tscFile.ToString();
@@ -372,26 +380,101 @@ namespace XP2AFSAirportConverter
             string datFileData = "";
 
             using (var fileStream = new FileStream(xpZipFilename, FileMode.Open, FileAccess.Read))
-            using (var zipFile = new ZipFile(fileStream))
             {
-                var zipEntry = zipFile.GetEntry(icaoCode + ".dat");
-                if (zipEntry == null)
+                using (var zipFile = new ZipFile(fileStream))
                 {
-                    log.ErrorFormat("{0}.dat not found in zip", icaoCode);
-                }
-
-                using (var stream = zipFile.GetInputStream(zipEntry))
-                {
-                    using (var reader = new StreamReader(stream))
+                    var zipEntry = zipFile.GetEntry(icaoCode + ".dat");
+                    if (zipEntry == null)
                     {
-                        datFileData = reader.ReadToEnd();
+                        log.ErrorFormat("{0}.dat not found in zip", icaoCode);
+                    }
+
+                    using (var stream = zipFile.GetInputStream(zipEntry))
+                    {
+                        using (var reader = new StreamReader(stream))
+                        {
+                            datFileData = reader.ReadToEnd();
+                        }
                     }
                 }
             }
 
             var datFileParser = new DATFileParser();
-            var datFile = datFileParser.Parse(datFileData);
+            var datFile = datFileParser.ParseFromString(datFileData);
             return datFile;
+        }
+
+        private DSFFile GetDSFFileFromXPZip(string icaoCode, string xpZipFilename)
+        {
+            // Fun and games, the DSF file is in the hierarchy
+            // ICAO.zip
+            //   ICAO_Scenery_Pack.zip
+            //     ICAO_Scenery_Pack (dir)
+            //       Earth nav data
+            //         -60-080 (this is not fixed)
+            //           -52-073.dsf (this is not fixed
+
+            byte[] dsfFileData = null;
+
+            using (var fileStream = new FileStream(xpZipFilename, FileMode.Open, FileAccess.Read))
+            {
+                using (var zipFile = new ZipFile(fileStream))
+                {
+                    var innerZipName = String.Format("{0}_Scenery_Pack.zip", icaoCode);
+                    var zipEntry = zipFile.GetEntry(innerZipName);
+                    if (zipEntry == null)
+                    {
+                        log.ErrorFormat("{0} not found in zip", innerZipName);
+                    }
+
+
+                    using (var stream = zipFile.GetInputStream(zipEntry))
+                    {
+                        // The stream above is not seekable. We need to copy it to a memory
+                        // stream first, then we can instantiate another ZipFile object from
+                        // the memory stream
+                        using (var memoryStream = new MemoryStream())
+                        {
+                            stream.CopyTo(memoryStream);
+                            memoryStream.Position = 0;
+
+                            using (var innerZipFile = new ZipFile(memoryStream))
+                            {
+                                foreach (ZipEntry innerZipEntry in innerZipFile)
+                                {
+                                    if (zipEntry.IsDirectory)
+                                        continue;
+
+                                    //log.Debug(innerZipEntry.Name);
+
+                                    if (innerZipEntry.Name.Contains(".dsf"))
+                                    {
+                                        using (Stream dsfFileStream = innerZipFile.GetInputStream(innerZipEntry))
+                                        {
+                                            // Get the bytes of the dsf file
+                                            using (MemoryStream dsfFileMemoryStream = new MemoryStream())
+                                            {
+                                                byte[] buffer = new byte[4096];
+                                                StreamUtils.Copy(dsfFileStream, dsfFileMemoryStream, buffer);
+                                                dsfFileData = dsfFileMemoryStream.ToArray();
+                                            }
+  
+                                        }
+                                    }
+
+
+                                }
+                            }
+                        }
+                    }
+
+                }
+            }
+
+            var dsfFileParser = new DSFFileParser();
+            var dsfFile = dsfFileParser.ParseFromBytes(dsfFileData);
+            dsfFileData = null;
+            return dsfFile;
         }
     }
 }
