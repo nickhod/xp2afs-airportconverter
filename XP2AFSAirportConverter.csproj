@@ -67,6 +67,9 @@
     <Compile Include="SceneryGateway\Models\Metadata.cs" />
     <Compile Include="SceneryGateway\Models\Scenery.cs" />
     <Compile Include="SceneryGateway\Models\SceneryResponse.cs" />
+    <Compile Include="ScriptGenerators\BlenderScriptGenerators.cs" />
+    <Compile Include="ScriptGenerators\MaxScriptGenerator.cs" />
+    <Compile Include="ScriptGenerators\ScriptGenerator.cs" />
     <Compile Include="XP\DATFileParser.cs" />
     <Compile Include="XP\DSFFileParser.cs" />
     <Compile Include="XP\DATFile.cs" />
