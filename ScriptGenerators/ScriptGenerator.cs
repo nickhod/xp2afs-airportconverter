@@ -10,6 +10,6 @@ namespace XP2AFSAirportConverter.ScriptGenerators
 {
     public abstract class ScriptGenerator
     {
-        public abstract void GenerateScripts(DATFile datFile, DSFFile dsfFile);
+        public abstract void GenerateScripts(string icao, DATFile datFile, DSFFile dsfFile, string outputFolder);
     }
 }

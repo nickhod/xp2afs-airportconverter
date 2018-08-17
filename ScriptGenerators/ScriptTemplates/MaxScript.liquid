@@ -1,0 +1,18 @@
+﻿--Set units to meters. 1 unit = 1 meter
+units.DisplayType = #Metric
+units.MetricType = #meters
+units.SystemType = #meters
+units.SystemScale = 1
+
+-- Draw runway
+macros.run "Objects Shapes" "Rectangle"
+Rectangle length:111.555 width:769.232 cornerRadius:0 pos:[0,0,0] isSelected:on
+$.name = "Runway1"
+select $Runway1
+toolMode.coordsys #view
+rotate $ (angleaxis 44.4805 [0,0,1])
+
+-- Quadify Runway
+select $Runway1
+modPanel.addModToSelection (Quadify_Mesh ()) ui:on
+$.modifiers[#Quadify_Mesh].quadsize = 16

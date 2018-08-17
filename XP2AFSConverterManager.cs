@@ -17,6 +17,7 @@ using XP2AFSAirportConverter.Converters;
 using XP2AFSAirportConverter.Models;
 using XP2AFSAirportConverter.SceneryGateway;
 using XP2AFSAirportConverter.SceneryGateway.Models;
+using XP2AFSAirportConverter.ScriptGenerators;
 using XP2AFSAirportConverter.XP;
 
 namespace XP2AFSAirportConverter
@@ -319,6 +320,8 @@ namespace XP2AFSAirportConverter
 
                 File.WriteAllText(tmcFilename, tscFileString);
 
+                var maxScriptGenerator = new MaxScriptGenerator();
+                maxScriptGenerator.GenerateScripts(icaoCode, datFile, dsfFile, airportAFSFullDirectory);
             }
             else
             {

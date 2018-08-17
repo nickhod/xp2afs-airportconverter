@@ -14,3 +14,4 @@
 /.vs/XP2AFSAirportConverter/v15/*.suo
 /.vs/XP2AFSAirportConverter/v15/Server/sqlite3
 /XP2AFSAirportConverter.csproj.user
+/packages/DotLiquid.2.0.271

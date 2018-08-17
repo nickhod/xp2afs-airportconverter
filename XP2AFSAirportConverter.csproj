@@ -32,6 +32,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="DotLiquid, Version=2.0.271.0, Culture=neutral, PublicKeyToken=82e46016ecf9f07c, processorArchitecture=MSIL">
+      <HintPath>packages\DotLiquid.2.0.271\lib\net45\DotLiquid.dll</HintPath>
+    </Reference>
     <Reference Include="ICSharpCode.SharpZipLib, Version=0.86.0.518, Culture=neutral, PublicKeyToken=1b03e6acf1164f73, processorArchitecture=MSIL">
       <HintPath>packages\SharpZipLib.0.86.0\lib\20\ICSharpCode.SharpZipLib.dll</HintPath>
     </Reference>
@@ -60,6 +63,8 @@
     <Compile Include="Common\BetterWebClient.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="Common\EndianUtilities.cs" />
+    <Compile Include="Common\Enums.cs" />
     <Compile Include="Common\Settings.cs" />
     <Compile Include="Converters\DATToTSCConverter.cs" />
     <Compile Include="SceneryGateway\Models\Airport.cs" />
@@ -69,6 +74,7 @@
     <Compile Include="SceneryGateway\Models\SceneryResponse.cs" />
     <Compile Include="ScriptGenerators\BlenderScriptGenerators.cs" />
     <Compile Include="ScriptGenerators\MaxScriptGenerator.cs" />
+    <Compile Include="ScriptGenerators\Models\ScriptModel.cs" />
     <Compile Include="ScriptGenerators\ScriptGenerator.cs" />
     <Compile Include="XP\DATFileParser.cs" />
     <Compile Include="XP\DSFFileParser.cs" />
@@ -85,6 +91,12 @@
   <ItemGroup>
     <None Include="App.config" />
     <None Include="packages.config" />
+    <None Include="ScriptGenerators\ScriptTemplates\BlenderScript.liquid">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="ScriptGenerators\ScriptTemplates\MaxScript.liquid">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

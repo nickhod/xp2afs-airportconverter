@@ -33,11 +33,17 @@ namespace XP2AFSAirportConverter
                 // Start reading atoms from position 12
                 int position = 12;
 
+
+                var firstAtom = dsfFileData.SubArray(12, 8);
+                var atomTypeBytes = firstAtom.SubArray(0, 4);
+                var atomType = Encoding.ASCII.GetString(EndianUtilities.Swap(atomTypeBytes));
+
+
                 using (var stream = new MemoryStream(dsfFileData))
                 {
                     stream.Position = position;
 
-
+                    //stream.re
                 }
 
             }
