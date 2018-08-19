@@ -15,3 +15,5 @@
 /.vs/XP2AFSAirportConverter/v15/Server/sqlite3
 /XP2AFSAirportConverter.csproj.user
 /packages/DotLiquid.2.0.271
+/packages/DotSpatial.GeoAPI.1.7.4.3
+/packages/DotSpatial.NetTopologySuite.1.14.4

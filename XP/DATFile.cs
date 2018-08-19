@@ -17,6 +17,11 @@ namespace XP2AFSAirportConverter.XP
         public AirportHeader AirportHeader { get; set; }
         public IList<LandRunway> LandRunways { get; set; }
         public IList<WaterRunway> WaterRunways { get; set; }
+        public Helipad Helipad { get; set; }
+        public AirportBoundary AirportBoundary { get; set; }
+        public IList<Pavement> Pavements { get; set; }
+        public IList<LinearFeature> LinearFeatures { get; set; }
+
     }
 
     public class AirportHeader
@@ -59,6 +64,8 @@ namespace XP2AFSAirportConverter.XP
         public double Width { get; set; }
 
         public bool HasPerimeterBuoys { get; set; }
+        public WaterRunwayEnd End1 { get; set; }
+        public WaterRunwayEnd End2 { get; set; }
 
     }
 
@@ -110,15 +117,17 @@ namespace XP2AFSAirportConverter.XP
 
     public class Node
     {
-        public double X { get; set; }
-        public double Y { get; set; }
+        public double Latitude { get; set; }
+        public double Longitude { get; set; }
 
-        public double BezierControlPointX { get; set; }
-        public double BezierControlPointY { get; set; }
+        public double BezierControlPointLatitude { get; set; }
+        public double BezierControlPointLongitude { get; set; }
         public bool End { get; set; }
         public bool CloseLoop { get; set; }
 
         public LineType LineType { get; set; }
+
+        public LineType LightingLineType { get; set; }
     }
 
 

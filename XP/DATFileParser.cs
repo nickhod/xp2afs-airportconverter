@@ -57,7 +57,8 @@ namespace XP2AFSAirportConverter.XP
         ATCGround = 53,
         ATCTower = 54,
         ATCApproach = 55,
-        ATCDeparture = 56
+        ATCDeparture = 56,
+        Unknown1 = 1050
     }
 
     /*
@@ -74,6 +75,18 @@ http://developer.x-plane.com/wp-content/uploads/2015/11/XP-APT1000-Spec.pdf
         private RowCode ParseMode { get; set; }
 
         private DATFile datFile;
+
+        private IList<Node> temporaryNodeCollection { get; set; }
+
+        /// <summary>
+        /// The last "header" line processeed. Does not include nodes
+        /// </summary>
+        private RowCode LastHeaderRowCode { get; set; }
+
+        public DATFileParser()
+        {
+            this.temporaryNodeCollection = new List<Node>();
+        }
 
         public DATFile ParseFromString(string data)
         {
@@ -115,91 +128,146 @@ http://developer.x-plane.com/wp-content/uploads/2015/11/XP-APT1000-Spec.pdf
                         switch (rowCode)
                         {
                             case RowCode.LandAirportHeader:
+                                this.SaveTemporaryNodeCollection();
                                 this.ParseAirportHeader(data);
                                 break;
                             case RowCode.SeaplaneBaseHeader:
+                                this.SaveTemporaryNodeCollection();
                                 this.ParseAirportHeader(data);
                                 break;
                             case RowCode.HeliportHeader:
+                                this.SaveTemporaryNodeCollection();
                                 this.ParseAirportHeader(data);
                                 break;
                             case RowCode.LandRunway:
+                                this.SaveTemporaryNodeCollection();
                                 this.ParseLandRunway(data);
                                 break;
                             case RowCode.WaterRunway:
+                                this.SaveTemporaryNodeCollection();
                                 break;
                             case RowCode.Helipad:
+                                this.SaveTemporaryNodeCollection();
                                 break;
                             case RowCode.Pavement:
+                                this.SaveTemporaryNodeCollection();
                                 break;
                             case RowCode.LinearFeature:
+                                this.SaveTemporaryNodeCollection();
                                 break;
                             case RowCode.AirportBoundary:
+                                this.SaveTemporaryNodeCollection();
+                                this.ParseAirportBoundary(data);
                                 break;
                             case RowCode.Node:
+                                this.ParseNode(data);
                                 break;
                             case RowCode.Node1:
+                                this.ParseNode(data);
                                 break;
                             case RowCode.Node2:
+                                this.ParseNode(data);
                                 break;
                             case RowCode.Node3:
+                                this.ParseNode(data);
                                 break;
                             case RowCode.Node4:
+                                this.ParseNode(data);
                                 break;
                             case RowCode.Node5:
+                                this.ParseNode(data);
                                 break;
                             case RowCode.Viewpoint:
+                                this.SaveTemporaryNodeCollection();
                                 break;
                             case RowCode.StartupLocation:
+                                this.SaveTemporaryNodeCollection();
                                 break;
                             case RowCode.LightBeacon:
+                                this.SaveTemporaryNodeCollection();
                                 break;
                             case RowCode.Windsock:
+                                this.SaveTemporaryNodeCollection();
                                 break;
                             case RowCode.Signs:
+                                this.SaveTemporaryNodeCollection();
                                 break;
                             case RowCode.LightingObjects:
+                                this.SaveTemporaryNodeCollection();
                                 break;
                             case RowCode.TrafficFlow:
+                                this.SaveTemporaryNodeCollection();
                                 break;
                             case RowCode.TrafficFlowWindRule:
+                                this.SaveTemporaryNodeCollection();
                                 break;
                             case RowCode.TrafficFlowCeilingRule:
+                                this.SaveTemporaryNodeCollection();
                                 break;
                             case RowCode.TrafficFlowVisibilityRule:
+                                this.SaveTemporaryNodeCollection();
                                 break;
                             case RowCode.TrafficTimeRule:
+                                this.SaveTemporaryNodeCollection();
                                 break;
                             case RowCode.RunwayInUseRule:
+                                this.SaveTemporaryNodeCollection();
                                 break;
                             case RowCode.VFRPatternRule:
+                                this.SaveTemporaryNodeCollection();
                                 break;
                             case RowCode.TaxiRoutingNetwork:
+                                this.SaveTemporaryNodeCollection();
                                 break;
                             case RowCode.TaxiRoutingEdge:
+                                this.SaveTemporaryNodeCollection();
                                 break;
                             case RowCode.EdgeActiveZone:
+                                this.SaveTemporaryNodeCollection();
                                 break;
                             case RowCode.TaxiLocation:
+                                this.SaveTemporaryNodeCollection();
                                 break;
                             case RowCode.ATCRecorded:
+                                this.SaveTemporaryNodeCollection();
                                 break;
                             case RowCode.ATCUnicom:
+                                this.SaveTemporaryNodeCollection();
                                 break;
                             case RowCode.ATCClearance:
+                                this.SaveTemporaryNodeCollection();
                                 break;
                             case RowCode.ATCGround:
+                                this.SaveTemporaryNodeCollection();
                                 break;
                             case RowCode.ATCTower:
+                                this.SaveTemporaryNodeCollection();
                                 break;
                             case RowCode.ATCApproach:
+                                this.SaveTemporaryNodeCollection();
                                 break;
                             case RowCode.ATCDeparture:
+                                this.SaveTemporaryNodeCollection();
                                 break;
                             case RowCode.Metadata:
+                                this.SaveTemporaryNodeCollection();
                                 break;
                             default:
+                                this.SaveTemporaryNodeCollection();
                                 break;
+                        }
+
+
+                        // Store the last "header" row processed.
+                        // This exclude node rows that "belong" to a specific header
+                        if (rowCode != RowCode.Node &&
+                            rowCode != RowCode.Node1 &&
+                            rowCode != RowCode.Node2 &&
+                            rowCode != RowCode.Node3 &&
+                            rowCode != RowCode.Node4 &&
+                            rowCode != RowCode.Node5)
+                        {
+                            this.LastHeaderRowCode = rowCode;
                         }
                     }
                 }
@@ -246,7 +314,7 @@ http://developer.x-plane.com/wp-content/uploads/2015/11/XP-APT1000-Spec.pdf
 
         private void ParseLandRunway(string[] data)
         {
-            if (data.Length >= 6)
+            if (data.Length >= 26)
             {
                 var landRunway = new LandRunway();
 
@@ -337,6 +405,7 @@ http://developer.x-plane.com/wp-content/uploads/2015/11/XP-APT1000-Spec.pdf
 
                 this.datFile.LandRunways.Add(landRunway);
             }
+            else
             {
                 log.ErrorFormat("Landrunway has {0} data elements, which is too few.", data.Length);
             }
@@ -529,13 +598,118 @@ http://developer.x-plane.com/wp-content/uploads/2015/11/XP-APT1000-Spec.pdf
 
         private void ParseNode(string[] data)
         {
-            if (data.Length >= 6)
+            Node node = new Node();
+
+            int nodeRowCode;
+            if (!int.TryParse(data[0], out nodeRowCode))
             {
+                log.Error("Error parsing node code");
+            }
+
+            // Every node type has a lat / lon
+            double latitude;
+            if (double.TryParse(data[1], out latitude))
+            {
+                node.Latitude = latitude;
+            }
+            else
+            {
+                log.Error("Error parsing node latitude");
+            }
+
+            // Every node type has a lat / lon
+            double longitude;
+            if (double.TryParse(data[2], out longitude))
+            {
+                node.Longitude = longitude;
+            }
+            else
+            {
+                log.Error("Error parsing node longitude");
+            }
+
+            int lineTypeIndex = 3;
+            int lightingLineTypeIndex = 4;
+
+            // The line type index of these nodes types is shifted due ot the bezier control point
+            if (nodeRowCode == 112|| nodeRowCode == 114)
+            {
+                lineTypeIndex= 5;
+                lightingLineTypeIndex = 6;
+            }
+
+            // All node types apart from these may have line types
+            if (nodeRowCode != 115 && nodeRowCode != 116)
+            {
+                int expectedDataLengthWithLineTypes = 5;
+
+                if (nodeRowCode == 112 || nodeRowCode == 114)
+                {
+                    expectedDataLengthWithLineTypes = 7;
+                }
+
+                if (data.Length == expectedDataLengthWithLineTypes)
+                {
+                    int lineTypeInt;
+                    if (int.TryParse(data[lineTypeIndex], out lineTypeInt))
+                    {
+                        node.LineType = (LineType)lineTypeInt;
+                    }
+                    else
+                    {
+                        log.Error("Error parsing node line type");
+                    }
+
+                    int lightingLineTypeInt;
+                    if (int.TryParse(data[lightingLineTypeIndex], out lightingLineTypeInt))
+                    {
+                        node.LightingLineType = (LineType)lightingLineTypeInt;
+                    }
+                    else
+                    {
+                        log.Error("Error parsing node lighting line type");
+                    }
+                }
+
 
             }
+
+            // These node types have a bezier control point
+            if (nodeRowCode == 112 || nodeRowCode == 114 || nodeRowCode == 116)
             {
-                log.ErrorFormat("Node has {0} data elements, which is too few.", data.Length);
+                double bezierLatitude;
+                if (double.TryParse(data[3], out bezierLatitude))
+                {
+                    node.BezierControlPointLatitude = bezierLatitude;
+                }
+                else
+                {
+                    log.Error("Error parsing node bezier latitude");
+                }
+
+                double bezierLongitude;
+                if (double.TryParse(data[4], out bezierLongitude))
+                {
+                    node.BezierControlPointLongitude = bezierLongitude;
+                }
+                else
+                {
+                    log.Error("Error parsing node bezier longitude");
+                }
             }
+
+            // These node types close a loop
+            if (nodeRowCode == 113 || nodeRowCode == 114)
+            {
+                node.CloseLoop = true;
+            }
+
+            if (nodeRowCode == 115 || nodeRowCode == 116)
+            {
+                node.End = true;
+            }
+
+            this.temporaryNodeCollection.Add(node);
         }
 
         private void ParseStartupLocation(string[] data)
@@ -569,6 +743,44 @@ http://developer.x-plane.com/wp-content/uploads/2015/11/XP-APT1000-Spec.pdf
             {
                 log.ErrorFormat("VRF Pattern rule has {0} data elements, which is too few.", data.Length);
             }
+        }
+
+        private void ParseAirportBoundary(string[] data)
+        {
+            if (data.Length >= 2)
+            {
+                this.datFile.AirportBoundary = new AirportBoundary();
+                this.datFile.AirportBoundary.Description = data[1];
+            }
+            {
+                log.ErrorFormat("Airport boundard has {0} data elements, which is too few.", data.Length);
+            }
+        }
+
+        private void SaveTemporaryNodeCollection()
+        {
+            if (this.temporaryNodeCollection.Count > 0)
+            {
+                switch (this.LastHeaderRowCode)
+                {
+                    case RowCode.AirportBoundary:
+
+                        if (this.datFile.AirportBoundary.Nodes == null)
+                        {
+                            this.datFile.AirportBoundary.Nodes = new List<Node>();
+                        }
+
+                        ((List<Node>)this.datFile.AirportBoundary.Nodes).AddRange(this.temporaryNodeCollection);
+
+                        break;
+                    case RowCode.Pavement:
+                        break;
+                    case RowCode.LinearFeature:
+                        break;
+                }
+            }
+
+            this.temporaryNodeCollection.Clear();
         }
 
         private Boolean IsNumber(String s)

@@ -35,6 +35,12 @@
     <Reference Include="DotLiquid, Version=2.0.271.0, Culture=neutral, PublicKeyToken=82e46016ecf9f07c, processorArchitecture=MSIL">
       <HintPath>packages\DotLiquid.2.0.271\lib\net45\DotLiquid.dll</HintPath>
     </Reference>
+    <Reference Include="DotSpatial.GeoAPI, Version=1.7.4.0, Culture=neutral, PublicKeyToken=a1a0da7def465678, processorArchitecture=MSIL">
+      <HintPath>packages\DotSpatial.GeoAPI.1.7.4.3\lib\net40-client\DotSpatial.GeoAPI.dll</HintPath>
+    </Reference>
+    <Reference Include="DotSpatial.NetTopologySuite, Version=1.14.4.0, Culture=neutral, PublicKeyToken=f580a05016ebada1, processorArchitecture=MSIL">
+      <HintPath>packages\DotSpatial.NetTopologySuite.1.14.4\lib\net40-client\DotSpatial.NetTopologySuite.dll</HintPath>
+    </Reference>
     <Reference Include="ICSharpCode.SharpZipLib, Version=0.86.0.518, Culture=neutral, PublicKeyToken=1b03e6acf1164f73, processorArchitecture=MSIL">
       <HintPath>packages\SharpZipLib.0.86.0\lib\20\ICSharpCode.SharpZipLib.dll</HintPath>
     </Reference>
@@ -46,6 +52,7 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Device" />
     <Reference Include="System.Net" />
     <Reference Include="System.Web" />
     <Reference Include="System.Xml.Linq" />
@@ -63,8 +70,12 @@
     <Compile Include="Common\BetterWebClient.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="Common\GeoHelper.cs" />
+    <Compile Include="Common\DoubleExtensions.cs" />
     <Compile Include="Common\EndianUtilities.cs" />
     <Compile Include="Common\Enums.cs" />
+    <Compile Include="Common\GeoCoordinate.cs" />
+    <Compile Include="Common\Point.cs" />
     <Compile Include="Common\Settings.cs" />
     <Compile Include="Converters\DATToTSCConverter.cs" />
     <Compile Include="SceneryGateway\Models\Airport.cs" />

@@ -71,6 +71,14 @@ namespace XP2AFSAirportConverter
                         log.Info("Starting Get Airport List action");
                         this.GetAirportList();
                         break;
+                    case ConverterAction.ConvertAirportsStep1:
+                        break;
+                    case ConverterAction.ConvertAirportsStep2:
+                        break;
+                    case ConverterAction.CompressAndUploadAirports:
+                        //https://github.com/StevenBonePgh/SevenZipSharp
+                        //https://github.com/sshnet/SSH.NET
+                        break;
                       
                 }
             }
@@ -321,7 +329,7 @@ namespace XP2AFSAirportConverter
                 File.WriteAllText(tmcFilename, tscFileString);
 
                 var maxScriptGenerator = new MaxScriptGenerator();
-                maxScriptGenerator.GenerateScripts(icaoCode, datFile, dsfFile, airportAFSFullDirectory);
+                maxScriptGenerator.GenerateScripts(icaoCode, datFile, dsfFile, tscFile, airportAFSFullDirectory);
             }
             else
             {

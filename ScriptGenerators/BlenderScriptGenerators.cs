@@ -10,7 +10,7 @@ namespace XP2AFSAirportConverter.ScriptGenerators
 {
     public class BlenderScriptGenerators : ScriptGenerator
     {
-        public override void GenerateScripts(string icao, DATFile datFile, DSFFile dsfFile, string outputFolder)
+        public override void GenerateScripts(string icao, DATFile datFile, DSFFile dsfFile, TSCFile tscFile, string outputFolder)
         {
             throw new NotImplementedException();
         }

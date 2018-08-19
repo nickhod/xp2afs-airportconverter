@@ -63,7 +63,8 @@ namespace XP2AFSAirportConverter.Common
         MALSF = 9,
         MALS = 10,
         ODALS = 11,
-        RAIL = 12
+        RAIL = 12,
+        Standard
     }
 
     public enum REILLights

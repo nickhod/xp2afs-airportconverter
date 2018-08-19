@@ -4,15 +4,23 @@ units.MetricType = #meters
 units.SystemType = #meters
 units.SystemScale = 1
 
--- Draw runway
-macros.run "Objects Shapes" "Rectangle"
-Rectangle length:111.555 width:769.232 cornerRadius:0 pos:[0,0,0] isSelected:on
-$.name = "Runway1"
-select $Runway1
-toolMode.coordsys #view
-rotate $ (angleaxis 44.4805 [0,0,1])
+-- Draw runways
+{% assign i = 1 %}
+{% for runway in runways -%}
+	macros.run "Objects Shapes" "Rectangle"
+	Rectangle length:{{runway.length}} width:{{runway.width}} cornerRadius:0 pos:[0,0,0] isSelected:on
+	$.name = "Runway{{i}}"
+	select $Runway{{i}}
+	toolMode.coordsys #view
+	rotate $ (angleaxis {{runway.angle}} [0,0,1])
+
+	$.pos.x = {{runway.X}}
+	$.pos.y = {{runway.Y}}
+
+	{% assign i = i | plus:1 %}
+{% endfor -%}
 
 -- Quadify Runway
-select $Runway1
-modPanel.addModToSelection (Quadify_Mesh ()) ui:on
-$.modifiers[#Quadify_Mesh].quadsize = 16
+--select $Runway1
+--modPanel.addModToSelection (Quadify_Mesh ()) ui:on
+--$.modifiers[#Quadify_Mesh].quadsize = 16
