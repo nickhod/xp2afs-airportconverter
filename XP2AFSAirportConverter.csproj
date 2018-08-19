@@ -98,6 +98,7 @@
     <Compile Include="SceneryGateway\Models\AirportListItem.cs" />
     <Compile Include="SceneryGateway\SceneryGatewayApi.cs" />
     <Compile Include="XP2AFSConverterManager.cs" />
+    <Compile Include="XP\DSFTextFileParser.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

@@ -12,6 +12,8 @@ namespace XP2AFSAirportConverter
 {
     // https://developer.x-plane.com/article/dsf-file-format-specification/
 
+    // Decided to use XPTools to convert the DSF into text first
+    // May implement a binary DSF parser later
     public class DSFFileParser
     {
         private DSFFile dsfFile;
@@ -54,5 +56,22 @@ namespace XP2AFSAirportConverter
 
             return this.dsfFile;
         }
+
+        private void ParseDefinitionsAtom()
+        {
+
+        }
+
+        private void ParseObjecctsAtom()
+        {
+
+        }
+
+        private void ParsePolygonsAtom()
+        {
+
+        }
+
+
     }
 }
