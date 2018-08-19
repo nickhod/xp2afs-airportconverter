@@ -100,7 +100,6 @@ http://developer.x-plane.com/wp-content/uploads/2015/11/XP-APT1000-Spec.pdf
                 if (line != null)
                 {
                     this.ParseLine(line);
-                    int i = 0;
                 }
                 else
                 {

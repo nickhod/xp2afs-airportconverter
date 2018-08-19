@@ -17,3 +17,15 @@
 /packages/DotLiquid.2.0.271
 /packages/DotSpatial.GeoAPI.1.7.4.3
 /packages/DotSpatial.NetTopologySuite.1.14.4
+/XP2AFSAirportConverter/bin/Debug
+/XP2AFSAirportConverter/obj/Debug
+/XP2AFSAirportConverter/packages/DotLiquid.2.0.271
+/XP2AFSAirportConverter/packages/DotSpatial.NetTopologySuite.1.14.4/lib/net40-client
+/XP2AFSAirportConverter/packages/Newtonsoft.Json.11.0.2
+/XP2AFSAirportConverter/packages/SharpZipLib.0.86.0
+/XP2AFSAirportConverter/packages/log4net.2.0.8/lib/
+/XP2AFSAirportConverter/packages/DotSpatial.GeoAPI.1.7.4.3
+/XP2AFSAirportConverter/.vs/XP2AFSAirportConverter/v15/*.suo
+/XP2AFSAirportConverter/*.user
+/XP2AFSAirportConverter/packages/DotSpatial.NetTopologySuite.1.14.4
+/XP2AFSAirportConverter/packages/log4net.2.0.8

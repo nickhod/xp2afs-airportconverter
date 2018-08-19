@@ -283,7 +283,7 @@ namespace XP2AFSAirportConverter
                 }
             }
 
-            catch (Exception ex)
+            catch (Exception)
             {
                 log.ErrorFormat("Failed to download airport {0}", icaoCode);
             }

@@ -16,6 +16,9 @@ namespace XP2AFSAirportConverter.XP
 
         public DSFFile ParseFromString(string data)
         {
+            this.dsfFile = new DSFFile();
+
+            return this.dsfFile;
         }
     }
 }

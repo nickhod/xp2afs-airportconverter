@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.26228.21
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XP2AFSAirportConvertor", "XP2AFSAirportConverter.csproj", "{EE148E67-55A0-4D5E-9702-0DCFC61E0278}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XP2AFSAirportConverter", "XP2AFSAirportConverter.csproj", "{EE148E67-55A0-4D5E-9702-0DCFC61E0278}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
