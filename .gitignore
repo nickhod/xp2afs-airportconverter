@@ -29,3 +29,7 @@
 /XP2AFSAirportConverter/*.user
 /XP2AFSAirportConverter/packages/DotSpatial.NetTopologySuite.1.14.4
 /XP2AFSAirportConverter/packages/log4net.2.0.8
+/Utils/AirportListScraper/.vs/AirportListScraper/v15/*.suo
+/Utils/ObjectMapGenerator/obj/Debug
+/Utils/AirportListScraper/obj/Debug
+/Utils/ObjectMapGenerator/.vs/ObjectMapGenerator/v15/*.suo

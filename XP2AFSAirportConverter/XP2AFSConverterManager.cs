@@ -50,6 +50,7 @@ namespace XP2AFSAirportConverter
             log.Info("------------------------------------------------------------");
 
             this.CreateDirectories();
+            this.ReadSettings();
 
             this.ParseArgs(args);
 
@@ -123,26 +124,47 @@ namespace XP2AFSAirportConverter
             var xp2AFSConverterFolder = documentsFolderPath + @"\XP2AFSConverter\";
             var xplaneXP2AFSConverterFolder = documentsFolderPath + @"\XP2AFSConverter\xp\";
             var afsXP2AFSConverterFolder = documentsFolderPath + @"\XP2AFSConverter\afs\";
+            var tempFolder = documentsFolderPath + @"\XP2AFSConverter\temp\";
 
             if (!Directory.Exists(xp2AFSConverterFolder))
             {
                 Directory.CreateDirectory(xp2AFSConverterFolder);
+            }
 
-                if (!Directory.Exists(xplaneXP2AFSConverterFolder))
-                {
-                    Directory.CreateDirectory(xplaneXP2AFSConverterFolder);
-                }
+            if (!Directory.Exists(xplaneXP2AFSConverterFolder))
+            {
+                Directory.CreateDirectory(xplaneXP2AFSConverterFolder);
+            }
 
-                if (!Directory.Exists(afsXP2AFSConverterFolder))
-                {
-                    Directory.CreateDirectory(afsXP2AFSConverterFolder);
-                }
+            if (!Directory.Exists(afsXP2AFSConverterFolder))
+            {
+                Directory.CreateDirectory(afsXP2AFSConverterFolder);
+            }
+
+            if (!Directory.Exists(tempFolder))
+            {
+                Directory.CreateDirectory(tempFolder);
             }
 
             this.settings.XP2AFSConverterFolder = xp2AFSConverterFolder;
             this.settings.XPlaneXP2AFSConverterFolder = xplaneXP2AFSConverterFolder;
             this.settings.AFSXP2AFSConverterFolder = afsXP2AFSConverterFolder;
+            this.settings.TempFolder = tempFolder;
 
+        }
+
+        private void ReadSettings()
+        {
+            string xpToolsPathRaw = System.Configuration.ConfigurationManager.AppSettings["XPToolsPath"];
+            string xpToolsPath = xpToolsPathRaw;
+
+            if (xpToolsPathRaw.Contains("{MyDocuments}"))
+            {
+                string documentsFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+                xpToolsPath = xpToolsPathRaw.Replace("{MyDocuments}", documentsFolder);
+            }
+
+            settings.XPToolsPath = xpToolsPath;
         }
 
         private void GetAirportList()
@@ -482,8 +504,13 @@ namespace XP2AFSAirportConverter
                 }
             }
 
-            var dsfFileParser = new DSFFileParser();
-            var dsfFile = dsfFileParser.ParseFromBytes(dsfFileData);
+            var dsf2TextManager = new DSF2TextManager();
+            var dsfAsText = dsf2TextManager.GetTextDSFFile(dsfFileData, settings);
+
+            var dsfTextFileParser = new DSFTextFileParser();
+            var dsfFile = dsfTextFileParser.ParseFromString(dsfAsText);
+
+            dsfAsText = null;
             dsfFileData = null;
             return dsfFile;
         }

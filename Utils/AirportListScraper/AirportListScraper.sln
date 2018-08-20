@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.26228.21
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AirportListScraper", "AirportListScraper.csproj", "{90A069BA-6603-42DE-BA31-A085A601C2ED}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{90A069BA-6603-42DE-BA31-A085A601C2ED}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{90A069BA-6603-42DE-BA31-A085A601C2ED}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{90A069BA-6603-42DE-BA31-A085A601C2ED}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{90A069BA-6603-42DE-BA31-A085A601C2ED}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

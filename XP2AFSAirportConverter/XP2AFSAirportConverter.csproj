@@ -51,6 +51,7 @@
       <HintPath>packages\Newtonsoft.Json.11.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Device" />
     <Reference Include="System.Net" />
@@ -88,6 +89,7 @@
     <Compile Include="ScriptGenerators\Models\ScriptModel.cs" />
     <Compile Include="ScriptGenerators\ScriptGenerator.cs" />
     <Compile Include="XP\DATFileParser.cs" />
+    <Compile Include="XP\DSF2TextManager.cs" />
     <Compile Include="XP\DSFFileParser.cs" />
     <Compile Include="XP\DATFile.cs" />
     <Compile Include="XP\DSFFile.cs" />

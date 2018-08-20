@@ -11,5 +11,7 @@ namespace XP2AFSAirportConverter.Common
         public string XP2AFSConverterFolder { get; set; }
         public string XPlaneXP2AFSConverterFolder { get; set; }
         public string AFSXP2AFSConverterFolder { get; set; }
+        public string TempFolder { get; set; }
+        public string XPToolsPath { get; set; }
     }
 }
