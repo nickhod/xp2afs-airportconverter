@@ -48,6 +48,42 @@ namespace XP2AFSAirportConverter.ScriptGenerators
             }
         }
 
+        protected void CalculatePavements()
+        {
+            foreach (var pavement in this.datFile.Pavements)
+            {
+                var scriptPavement = new ScriptPavement();
+                scriptPavement.Nodes = new List<ScriptNode>();
+                scriptPavement.Name = pavement.Description;
+
+                foreach (Node node in pavement.Nodes)
+                {
+                    var scriptNode = new ScriptNode();
+
+                    var nodeCoord = new GeoCoordinate(node.Latitude, node.Longitude);
+                    var nodePosition = GeoCoordinateToPoint(tscFile.Location, nodeCoord);
+
+                    GeoCoordinate bezierCoord = null;
+                    Point bezierPosition = null;
+
+                    scriptNode.X = nodePosition.X;
+                    scriptNode.Y = nodePosition.Y;
+
+                    if (node.BezierControlPointLatitude.HasValue && node.BezierControlPointLongitude.HasValue)
+                    {
+                        bezierCoord = new GeoCoordinate(node.BezierControlPointLatitude.Value, node.BezierControlPointLongitude.Value);
+                        bezierPosition = GeoCoordinateToPoint(tscFile.Location, bezierCoord);
+
+                        scriptNode.BezierControlX = bezierPosition.X;
+                        scriptNode.BezierControlY = bezierPosition.Y;
+                    }
+
+                    scriptPavement.Nodes.Add(scriptNode);
+                }
+
+            }
+        }
+
         /// <summary>
         /// 
         /// </summary>

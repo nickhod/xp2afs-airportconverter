@@ -16,6 +16,23 @@ namespace XP2AFSAirportConverter.ScriptGenerators.Models
         public double Angle { get; set; }
     }
 
+    public class ScriptPavement : Drop
+    {
+        public IList<ScriptNode> Nodes { get; set; }
+        public string Name { get; set; }
+    }
+
+    public class ScriptNode : Drop
+    {
+        public double X { get; set; }
+        public double Y { get; set; }
+
+        public double BezierControlX { get; set; }
+        public double BezierControlY { get; set; }
+        public bool End { get; set; }
+        public bool CloseLoop { get; set; }
+    }
+
     public class ScriptModel : Drop
     {
         public ScriptModel()

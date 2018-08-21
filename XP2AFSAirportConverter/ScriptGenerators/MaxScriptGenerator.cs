@@ -26,6 +26,7 @@ namespace XP2AFSAirportConverter.ScriptGenerators
 
             this.scriptModel = new ScriptModel();
             this.CalculateRunways();
+            this.CalculatePavements();
 
             Template template = Template.Parse(maxScript); 
             var maxScriptFinal = template.Render(Hash.FromAnonymousObject(scriptModel));
