@@ -183,6 +183,7 @@ namespace XP2AFSAirportConverter.XP
                 switch (polygon.PolygonType)
                 {
                     case PolygonType.Polygon:
+                        polygonWindingCollection.TextureHeading = value2;
                         break;
                     case PolygonType.Facade:
                         polygonWindingCollection.HeightMeters = value2;
@@ -270,25 +271,48 @@ namespace XP2AFSAirportConverter.XP
                     case PolygonType.Polygon:
                         if (extraValuesCount == 2)
                         {
-
+                            if (this.currentPolygonWindingCollection.TextureHeading == 65535)
+                            {
+                                // Control lon, control lat
+                                point.ControlLongitude = extraValues[0];
+                                point.ControlLatitude = extraValues[1];
+                            }
+                            else
+                            {
+                                // S, T
+                                point.S = extraValues[0];
+                                point.T= extraValues[1];
+                            }
                         }
                         else if (extraValuesCount == 6)
                         {
-
+                            // Control lon, control lat, S, T, control S, control T
+                            point.ControlLongitude = extraValues[0];
+                            point.ControlLatitude = extraValues[1];
+                            point.S = extraValues[2];
+                            point.T = extraValues[3];
+                            point.ControlS = extraValues[4];
+                            point.ControlT = extraValues[5];
                         }
                         break;
                     case PolygonType.Facade:
                         if (extraValuesCount == 1)
                         {
-
+                            // Wall type
+                            point.WallType = (int)extraValues[0];
                         }
                         else if (extraValuesCount == 2)
                         {
-
+                            // Bezier lon, Bezier lat
+                            point.BezierLongitude = extraValues[0];
+                            point.BerizerLatitude = extraValues[1];
                         }
                         else if (extraValuesCount == 3)
                         {
-
+                            // Wall type, Bezier lon, Bezier lat
+                            point.WallType = (int)extraValues[0];
+                            point.BezierLongitude = extraValues[1];
+                            point.BerizerLatitude = extraValues[2];
                         }
                         break;
                     case PolygonType.Forest:

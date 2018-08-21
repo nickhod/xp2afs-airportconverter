@@ -20,6 +20,16 @@ units.SystemScale = 1
 	{% assign i = i | plus:1 %}
 {% endfor -%}
 
+-- Draw pavement
+newSpline = SplineShape pos:[10,20,0]
+addNewSpline newSpline
+addKnot newSpline 1 #corner #line [10,20,0]
+addKnot newSpline 1 #corner #line [100,200,0]
+addKnot newSpline 1 #corner #line [100,300,0]
+updateShape newSpline
+newSpline.name = "Test"
+
+
 -- Quadify Runway
 --select $Runway1
 --modPanel.addModToSelection (Quadify_Mesh ()) ui:on
