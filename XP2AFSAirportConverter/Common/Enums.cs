@@ -142,4 +142,14 @@ namespace XP2AFSAirportConverter.Common
         All
 
     }
+
+    public enum PolygonType
+    {
+        Polygon,
+        Facade,
+        Forest,
+        Line,
+        String,
+        AutogenBlock
+    }
 }

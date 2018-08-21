@@ -12,9 +12,11 @@ using System.Threading.Tasks;
 using System.Web;
 using System.Xml;
 using System.Xml.Serialization;
+using XP2AFSAirportConverter.AFS;
 using XP2AFSAirportConverter.Common;
 using XP2AFSAirportConverter.Converters;
 using XP2AFSAirportConverter.Models;
+using XP2AFSAirportConverter.ResourceMapping;
 using XP2AFSAirportConverter.SceneryGateway;
 using XP2AFSAirportConverter.SceneryGateway.Models;
 using XP2AFSAirportConverter.ScriptGenerators;
@@ -33,12 +35,15 @@ namespace XP2AFSAirportConverter
         private List<ConverterAction> actions;
         private List<string> icaoCodes;
 
-        private DATToTSCConverter datToTSCConverter;
+        private DATConverter datConverter;
+        private DSFConverter dsfConverter;
+        private ResourceMapper resourceMapper;
 
         public XP2AFSConverterManager()
         {
             this.settings = new Settings();
-            this.datToTSCConverter = new DATToTSCConverter();
+            this.datConverter = new DATConverter();
+            this.dsfConverter = new DSFConverter();
             this.actions = new List<ConverterAction>();
             this.icaoCodes = new List<string>();
         }
@@ -53,6 +58,9 @@ namespace XP2AFSAirportConverter
             this.ReadSettings();
 
             this.ParseArgs(args);
+
+            this.resourceMapper = new ResourceMapper();
+            this.resourceMapper.ReadResourceMapping(settings.ResourceMapPath);
 
             this.sceneryGatewayApi = new SceneryGatewayApi();
 
@@ -165,6 +173,12 @@ namespace XP2AFSAirportConverter
             }
 
             settings.XPToolsPath = xpToolsPath;
+
+            // Currently doesn't support absolute paths
+            string resourceMapPath = System.Configuration.ConfigurationManager.AppSettings["ResourceMap"];
+            resourceMapPath = AppDomain.CurrentDomain.BaseDirectory + resourceMapPath;
+            settings.ResourceMapPath = resourceMapPath;
+
         }
 
         private void GetAirportList()
@@ -333,25 +347,45 @@ namespace XP2AFSAirportConverter
             var airportSceneryFilename = airportXPFullDirectory + @"\scenery.xml";
 
             var airportAFSFullDirectory = this.GetAirportAFSFullDirectory(icaoCode);
+
+            var tscFilename = airportAFSFullDirectory + @"\" + icaoCode + ".tsc";
+            var tocFilename = airportAFSFullDirectory + @"\" + icaoCode + ".toc";
             var tmcFilename = airportAFSFullDirectory + @"\" + icaoCode + ".tmc";
 
             if (File.Exists(airportZipFilename))
             {
+                // Parse the DST and DAT files
                 var datFile = this.GetDATFileFromXPZip(icaoCode, airportZipFilename);
                 var dsfFile = this.GetDSFFileFromXPZip(icaoCode, airportZipFilename);
 
-                var tscFile = this.datToTSCConverter.Convert(datFile);
+                // Create empty AFS files
+                var tscFile = new TSCFile();
+                var tocFile = new TOCFile();
+                var tmcFile = new TMCFile();
+
+                // Convert the X-Plane files
+                this.datConverter.Convert(datFile, tscFile, tocFile);
+                this.dsfConverter.Convert(dsfFile, tscFile, tocFile);
+
+                // Get strings of the AFS files
                 var tscFileString = tscFile.ToString();
+                var tocFileString = tocFile.ToString();
+                var tmcFileString = tmcFile.ToString();
 
                 if (!Directory.Exists(airportAFSFullDirectory))
                 {
                     Directory.CreateDirectory(airportAFSFullDirectory);
                 }
 
-                File.WriteAllText(tmcFilename, tscFileString);
+                // Write the AFS files
+                File.WriteAllText(tscFilename, tscFileString);
+                File.WriteAllText(tocFilename, tocFileString);
+                File.WriteAllText(tmcFilename, tmcFileString);
 
                 var maxScriptGenerator = new MaxScriptGenerator();
                 maxScriptGenerator.GenerateScripts(icaoCode, datFile, dsfFile, tscFile, airportAFSFullDirectory);
+
+                log.Info("Airport conversion done");
             }
             else
             {
@@ -445,7 +479,7 @@ namespace XP2AFSAirportConverter
             //     ICAO_Scenery_Pack (dir)
             //       Earth nav data
             //         -60-080 (this is not fixed)
-            //           -52-073.dsf (this is not fixed
+            //           -52-073.dsf (this is not fixed)
 
             byte[] dsfFileData = null;
 

@@ -65,6 +65,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AFS\TGIFile.cs" />
+    <Compile Include="AFS\TMCFile.cs" />
     <Compile Include="AFS\TOCFile.cs" />
     <Compile Include="Common\ArrayExtensions.cs" />
     <Compile Include="Common\ConverterAction.cs" />
@@ -78,7 +79,10 @@
     <Compile Include="Common\GeoCoordinate.cs" />
     <Compile Include="Common\Point.cs" />
     <Compile Include="Common\Settings.cs" />
-    <Compile Include="Converters\DATToTSCConverter.cs" />
+    <Compile Include="Converters\DATConverter.cs" />
+    <Compile Include="Converters\DSFConverter.cs" />
+    <Compile Include="ResourceMapping\ResourceMap.cs" />
+    <Compile Include="ResourceMapping\ResourceMapper.cs" />
     <Compile Include="SceneryGateway\Models\Airport.cs" />
     <Compile Include="SceneryGateway\Models\AirportResponse.cs" />
     <Compile Include="SceneryGateway\Models\Metadata.cs" />
@@ -112,6 +116,10 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Content Include="ResourceMapping\ResourceMap.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

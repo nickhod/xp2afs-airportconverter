@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ResourceMap xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Resources>
+    <ResourceMapItem XPResource="lib/g8/shrb_vcld_dry.for" AFSResource="plant|broadleaf|01_1650" CultivationObject="true" />
+    <ResourceMapItem XPResource="lib/g8/fruit_tmp_rain.for" AFSResource="plant|broadleaf|01_1650" CultivationObject="true" />
+    <ResourceMapItem XPResource="lib/g8/broad_sp_cld_rain.for" AFSResource="plant|broadleaf|01_1650" CultivationObject="true" />
+    <ResourceMapItem XPResource="lib/g8/shrb_cld_dry.for" AFSResource="plant|broadleaf|01_1650" CultivationObject="true" />
+  </Resources>
+</ResourceMap>

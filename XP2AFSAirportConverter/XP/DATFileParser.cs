@@ -522,6 +522,8 @@ http://developer.x-plane.com/wp-content/uploads/2015/11/XP-APT1000-Spec.pdf
             {
 
             }
+            else
+
             {
                 log.ErrorFormat("Metadata has {0} data elements, which is too few.", data.Length);
             }
@@ -533,6 +535,8 @@ http://developer.x-plane.com/wp-content/uploads/2015/11/XP-APT1000-Spec.pdf
             {
 
             }
+            else
+
             {
                 log.ErrorFormat("Sign has {0} data elements, which is too few.", data.Length);
             }
@@ -544,6 +548,8 @@ http://developer.x-plane.com/wp-content/uploads/2015/11/XP-APT1000-Spec.pdf
             {
 
             }
+            else
+
             {
                 log.ErrorFormat("Lighting object has {0} data elements, which is too few.", data.Length);
             }
@@ -555,6 +561,8 @@ http://developer.x-plane.com/wp-content/uploads/2015/11/XP-APT1000-Spec.pdf
             {
 
             }
+            else
+
             {
                 log.ErrorFormat("Light beacon has {0} data elements, which is too few.", data.Length);
             }
@@ -566,6 +574,8 @@ http://developer.x-plane.com/wp-content/uploads/2015/11/XP-APT1000-Spec.pdf
             {
 
             }
+            else
+
             {
                 log.ErrorFormat("Windsock has {0} data elements, which is too few.", data.Length);
             }
@@ -577,6 +587,8 @@ http://developer.x-plane.com/wp-content/uploads/2015/11/XP-APT1000-Spec.pdf
             {
 
             }
+            else
+
             {
                 log.ErrorFormat("Viewpoint has {0} data elements, which is too few.", data.Length);
             }
@@ -590,6 +602,8 @@ http://developer.x-plane.com/wp-content/uploads/2015/11/XP-APT1000-Spec.pdf
             {
 
             }
+            else
+
             {
                 log.ErrorFormat("Pavement has {0} data elements, which is too few.", data.Length);
             }
@@ -717,6 +731,8 @@ http://developer.x-plane.com/wp-content/uploads/2015/11/XP-APT1000-Spec.pdf
             {
 
             }
+            else
+
             {
                 log.ErrorFormat("Startup location has {0} data elements, which is too few.", data.Length);
             }
@@ -728,6 +744,8 @@ http://developer.x-plane.com/wp-content/uploads/2015/11/XP-APT1000-Spec.pdf
             {
 
             }
+            else
+
             {
                 log.ErrorFormat("Taxi location has {0} data elements, which is too few.", data.Length);
             }
@@ -739,6 +757,7 @@ http://developer.x-plane.com/wp-content/uploads/2015/11/XP-APT1000-Spec.pdf
             {
 
             }
+            else
             {
                 log.ErrorFormat("VRF Pattern rule has {0} data elements, which is too few.", data.Length);
             }
@@ -751,8 +770,9 @@ http://developer.x-plane.com/wp-content/uploads/2015/11/XP-APT1000-Spec.pdf
                 this.datFile.AirportBoundary = new AirportBoundary();
                 this.datFile.AirportBoundary.Description = data[1];
             }
+            else
             {
-                log.ErrorFormat("Airport boundard has {0} data elements, which is too few.", data.Length);
+                log.ErrorFormat("Airport boundary  has {0} data elements, which is too few.", data.Length);
             }
         }
 
