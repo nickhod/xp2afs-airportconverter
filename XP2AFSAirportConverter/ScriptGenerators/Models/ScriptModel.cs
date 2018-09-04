@@ -38,7 +38,10 @@ namespace XP2AFSAirportConverter.ScriptGenerators.Models
         public ScriptModel()
         {
             this.Runways = new List<ScriptRunway>();
+            this.Pavements = new List<ScriptPavement>();
         }
+
+        public IList<ScriptPavement> Pavements { get; set; }
         public IList<ScriptRunway> Runways { get; set; }
     }
 }

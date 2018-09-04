@@ -150,6 +150,7 @@ http://developer.x-plane.com/wp-content/uploads/2015/11/XP-APT1000-Spec.pdf
                                 break;
                             case RowCode.Pavement:
                                 this.SaveTemporaryNodeCollection();
+                                this.ParsePavement(data);
                                 break;
                             case RowCode.LinearFeature:
                                 this.SaveTemporaryNodeCollection();
@@ -600,7 +601,50 @@ http://developer.x-plane.com/wp-content/uploads/2015/11/XP-APT1000-Spec.pdf
         {
             if (data.Length >= 6)
             {
+                var pavement = new Pavement();
 
+                // Surface type
+                int surfaceTypeId;
+                if (int.TryParse(data[1], out surfaceTypeId))
+                {
+                    SurfaceType surfaceType = (SurfaceType)surfaceTypeId;
+                    pavement.SurfaceType = surfaceType;
+                }
+                else
+                {
+                    log.Error("Error parsing surface type");
+                }
+
+                // Smoothness
+                double smoothness;
+                if (double.TryParse(data[2], out smoothness))
+                {
+                    pavement.Smoothness = smoothness;
+                }
+                else
+                {
+                    log.Error("Error parsing smoothness");
+                }
+
+                // Orientation of texture
+                double orientation;
+                if (double.TryParse(data[3], out orientation))
+                {
+                    pavement.Orientation = orientation;
+                }
+                else
+                {
+                    log.Error("Error parsing orientation");
+                }
+
+                // Description
+                pavement.Description = data[4];
+
+                if (this.datFile.Pavements == null)
+                {
+                    this.datFile.Pavements = new List<Pavement>();
+                }
+                this.datFile.Pavements.Add(pavement);
             }
             else
 
@@ -793,6 +837,24 @@ http://developer.x-plane.com/wp-content/uploads/2015/11/XP-APT1000-Spec.pdf
 
                         break;
                     case RowCode.Pavement:
+
+                        // These nodes must be applicable to the last Pavement in the list
+                        if (this.datFile.Pavements != null && this.datFile.Pavements.Count > 0)
+                        {
+                            var pavement = this.datFile.Pavements[this.datFile.Pavements.Count - 1];
+
+                            if (pavement.Nodes == null)
+                            {
+                                pavement.Nodes = new List<Node>();
+                            }
+
+                            ((List<Node>)pavement.Nodes).AddRange(this.temporaryNodeCollection);
+                        }
+                        else
+                        {
+                            log.Error("Have a Node collection but no Pavement to attach to");
+                        }
+
                         break;
                     case RowCode.LinearFeature:
                         break;

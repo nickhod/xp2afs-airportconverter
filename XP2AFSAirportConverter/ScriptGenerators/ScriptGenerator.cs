@@ -81,7 +81,11 @@ namespace XP2AFSAirportConverter.ScriptGenerators
                     scriptPavement.Nodes.Add(scriptNode);
                 }
 
+                this.scriptModel.Pavements.Add(scriptPavement);
+
             }
+
+
         }
 
         /// <summary>

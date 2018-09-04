@@ -95,7 +95,7 @@ namespace XP2AFSAirportConverter.XP
     public class Pavement
     {
         public IList<Node> Nodes { get; set; }
-        public SurfaceType SurfaceCode { get; set; }
+        public SurfaceType SurfaceType { get; set; }
         public double Smoothness { get; set; }
         public double Orientation { get; set; }
         public string Description { get; set; }
