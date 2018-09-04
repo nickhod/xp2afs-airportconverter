@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -56,6 +57,8 @@ namespace XP2AFSAirportConverter.ScriptGenerators
                 scriptPavement.Nodes = new List<ScriptNode>();
                 scriptPavement.Name = pavement.Description;
 
+                bool lastNodeWasCloseLoop = true;
+
                 foreach (Node node in pavement.Nodes)
                 {
                     var scriptNode = new ScriptNode();
@@ -68,6 +71,22 @@ namespace XP2AFSAirportConverter.ScriptGenerators
 
                     scriptNode.X = nodePosition.X;
                     scriptNode.Y = nodePosition.Y;
+                    scriptNode.IsBezier = false;
+
+                    if (lastNodeWasCloseLoop)
+                    {
+                        scriptNode.OpenLoop = true;
+                    }
+
+                    if (node.CloseLoop)
+                    {
+                        scriptNode.CloseLoop = true;
+                        lastNodeWasCloseLoop = true;
+                    }
+                    else
+                    {
+                        lastNodeWasCloseLoop = false;
+                    }
 
                     if (node.BezierControlPointLatitude.HasValue && node.BezierControlPointLongitude.HasValue)
                     {
@@ -76,6 +95,7 @@ namespace XP2AFSAirportConverter.ScriptGenerators
 
                         scriptNode.BezierControlX = bezierPosition.X;
                         scriptNode.BezierControlY = bezierPosition.Y;
+                        scriptNode.IsBezier = true;
                     }
 
                     scriptPavement.Nodes.Add(scriptNode);

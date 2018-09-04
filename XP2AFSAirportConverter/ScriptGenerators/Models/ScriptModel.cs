@@ -31,6 +31,8 @@ namespace XP2AFSAirportConverter.ScriptGenerators.Models
         public double BezierControlY { get; set; }
         public bool End { get; set; }
         public bool CloseLoop { get; set; }
+        public bool OpenLoop { get; set; }
+        public bool IsBezier { get; set; }
     }
 
     public class ScriptModel : Drop
@@ -43,5 +45,8 @@ namespace XP2AFSAirportConverter.ScriptGenerators.Models
 
         public IList<ScriptPavement> Pavements { get; set; }
         public IList<ScriptRunway> Runways { get; set; }
+        public string AirportName { get; set; }
+        public string AirportICAO { get; set; }
+        public DateTime GeneratedOn { get; set; }
     }
 }
