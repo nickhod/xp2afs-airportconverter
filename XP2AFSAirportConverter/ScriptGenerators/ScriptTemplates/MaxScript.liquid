@@ -6,6 +6,8 @@
 -- /_/\_\_|  |_____/_/   \_\_|   |____/_/   \_\_|_|  | .__/ \___/|_|   \__|\____\___/|_| |_|\_/ \___|_|   \__\___|_|
 --                                                   |_|
 --
+--
+-- Translated from GPL licensed data from https://gateway.x-plane.com/
 -- This script is licensed under the GNU General Public License v3 https://www.gnu.org/licenses/gpl-3.0.en.html
 --
 -- Airport: {{AirportICAO}} {{AirportName}}
@@ -44,7 +46,7 @@ $.pos.y = {{runway.Y}}
 
 
 -- ----------------------------------------------------------------------------
--- Draw Pavements
+-- Draw DAT File Pavements
 -- ----------------------------------------------------------------------------
 
 {% assign i = 1 %}
@@ -55,6 +57,7 @@ $.pos.y = {{runway.Y}}
 {% for node in pavement.Nodes -%}
 {%- if node.OpenLoop -%}
 sp = splineShape()
+sp.steps = 12
 addNewSpline sp
 {%- endif -%}
 {%- if node.IsBezier -%}
@@ -67,14 +70,19 @@ close sp 1
 updateShape sp
 select sp
 sp.name = "Pavement {{i}} {{pavement.Name}}"
-{% assign i = i | plus:1 %}
 {%- endif -%}
 {% endfor -%}
 
-
-
+{% assign i = i | plus:1 %}
 {% endfor -%}
 
+-- ----------------------------------------------------------------------------
+-- Draw DSF File Pavements
+-- ----------------------------------------------------------------------------
+
+-- ----------------------------------------------------------------------------
+-- Draw DSF File Buildings
+-- ----------------------------------------------------------------------------
 
 -- Quadify Runway
 --select $Runway1

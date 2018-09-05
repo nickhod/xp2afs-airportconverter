@@ -58,6 +58,8 @@ namespace XP2AFSAirportConverter.ScriptGenerators
                 scriptPavement.Name = pavement.Description;
 
                 bool lastNodeWasCloseLoop = true;
+                Point lastPosition = null;
+                ScriptNode lastScriptNode = null;
 
                 foreach (Node node in pavement.Nodes)
                 {
@@ -65,6 +67,20 @@ namespace XP2AFSAirportConverter.ScriptGenerators
 
                     var nodeCoord = new GeoCoordinate(node.Latitude, node.Longitude);
                     var nodePosition = GeoCoordinateToPoint(tscFile.Location, nodeCoord);
+
+                    bool addNode = true;
+
+                    if (lastPosition != null)
+                    {
+                        if (nodePosition.X == lastPosition.X && nodePosition.Y == nodePosition.Y)
+                        {
+                            addNode = false;
+                            Debug.WriteLine("duplicate");
+                        }
+                    }
+
+                    lastPosition = nodePosition;
+
 
                     GeoCoordinate bezierCoord = null;
                     Point bezierPosition = null;
@@ -98,7 +114,25 @@ namespace XP2AFSAirportConverter.ScriptGenerators
                         scriptNode.IsBezier = true;
                     }
 
-                    scriptPavement.Nodes.Add(scriptNode);
+                    if (addNode)
+                    {
+                        lastScriptNode = scriptNode;
+                        scriptPavement.Nodes.Add(scriptNode);
+                    }
+                    else
+                    {
+                        if (scriptNode.CloseLoop)
+                        {
+                            lastScriptNode.CloseLoop = true;
+                        }
+
+                        if (scriptNode.OpenLoop)
+                        {
+                            lastScriptNode.OpenLoop = true;
+                        }
+                    }
+
+
                 }
 
                 this.scriptModel.Pavements.Add(scriptPavement);
