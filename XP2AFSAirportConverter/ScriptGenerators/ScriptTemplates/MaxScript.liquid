@@ -26,21 +26,19 @@ units.SystemScale = 1
 -- Draw Runways
 -- ----------------------------------------------------------------------------
 
-{% assign i = 1 %}
 {% for runway in Runways -%}
 -- ----------------------------------------------------------------------------
--- Runway {{i}}
+-- Runway {{runway.Index | Plus:1 }}
 macros.run "Objects Shapes" "Rectangle"
 Rectangle length:{{runway.Length}} width:{{runway.Width}} cornerRadius:0 pos:[0,0,0] isSelected:on
-$.name = "Runway {{i}}"
-select $Runway{{i}}
+$.name = "Runway {{runway.Index | Plus:1 }}"
+select $Runway {{runway.Index | Plus:1 }}
 toolMode.coordsys #view
 rotate $ (angleaxis {{runway.Angle}} [0,0,1])
 
 $.pos.x = {{runway.X}}
 $.pos.y = {{runway.Y}}
-
-{% assign i = i | plus:1 %}
+poly = convertToPoly($)
 
 {% endfor -%}
 
@@ -49,12 +47,12 @@ $.pos.y = {{runway.Y}}
 -- Draw DAT File Pavements
 -- ----------------------------------------------------------------------------
 
-{% assign i = 1 %}
-{% for pavement in Pavements -%}
+{% for pavement in DATPavements -%}
 -- ----------------------------------------------------------------------------
--- Pavement {{pavement.Name}}
+-- Pavement Pavement {{pavement.Index | Plus:1 }} {{pavement.Name}}
 
 {% for node in pavement.Nodes -%}
+{%- if node.Render -%}
 {%- if node.OpenLoop -%}
 sp = splineShape()
 sp.steps = 12
@@ -69,11 +67,12 @@ addKnot sp 1 #corner #line [{{node.X}},{{node.Y}},0]
 close sp 1
 updateShape sp
 select sp
-sp.name = "Pavement {{i}} {{pavement.Name}}"
+sp.name = "Pavement {{pavement.Index | Plus:1 }} {{pavement.Name}}"
+poly = convertToPoly(sp)
+{%- endif -%}
 {%- endif -%}
 {% endfor -%}
 
-{% assign i = i | plus:1 %}
 {% endfor -%}
 
 -- ----------------------------------------------------------------------------

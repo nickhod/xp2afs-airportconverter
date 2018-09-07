@@ -39,6 +39,8 @@ namespace XP2AFSAirportConverter
         private DSFConverter dsfConverter;
         private ResourceMapper resourceMapper;
 
+        private bool overwriteDownloads;
+
         public XP2AFSConverterManager()
         {
             this.settings = new Settings();
@@ -46,6 +48,7 @@ namespace XP2AFSAirportConverter
             this.dsfConverter = new DSFConverter();
             this.actions = new List<ConverterAction>();
             this.icaoCodes = new List<string>();
+            this.overwriteDownloads = false;
         }
 
         public void RunActions(string[] args)
@@ -119,6 +122,14 @@ namespace XP2AFSAirportConverter
                         if (icaoCode.ToLower() != "all")
                         {
                             this.icaoCodes.Add(icaoCode.ToUpper());
+                        }
+                    }
+
+                    if (args.Length > 2)
+                    {
+                        if (args[2] == "overwrite")
+                        {
+                            this.overwriteDownloads = true;
                         }
                     }
                 }
@@ -263,66 +274,104 @@ namespace XP2AFSAirportConverter
                 log.Info("------------------------------------------------------------");
                 log.InfoFormat("Downloading airport {0} of {1}", i + 1, icaoCodes.Count());
                 this.DownloadAirport(icaoCode);
-
-                Random rnd = new Random();
-                var wait = rnd.Next(500, 2000);
-                System.Threading.Thread.Sleep(wait);
                 i++;
-
-                if (i == 1000)
-                {
-                    break;
-                }
             }
+        }
+
+        private bool CheckIfXPAirportIsDownloaded(string icaoCode)
+        {
+            var airportFullDirectory = GetAirportXPFullDirectory(icaoCode);
+            var airportZipFilename = airportFullDirectory + @"\" + icaoCode + ".zip";
+            var airportFilename = airportFullDirectory + @"\airport.xml";
+            var airportSceneryFilename = airportFullDirectory + @"\scenery.xml";
+
+            bool airportExists = true;
+
+            if (!File.Exists(airportZipFilename))
+            {
+                airportExists = false;
+            }
+
+            if (!File.Exists(airportFilename))
+            {
+                airportExists = false;
+            }
+
+            if (!File.Exists(airportSceneryFilename))
+            {
+                airportExists = false;
+            }
+
+            return airportExists;
         }
 
         private void DownloadAirport(string icaoCode)
         {
-            log.InfoFormat("Downloading airport {0}", icaoCode);
+            bool download = true;
 
-            log.Info("Getting airport info");
-
-            try
+            // If we don't want to overwrite download and the airport already exists, don't download
+            if (!this.overwriteDownloads)
             {
-                var airport = this.sceneryGatewayApi.GetAirport(icaoCode);
-
-                if (airport != null)
+                if (this.CheckIfXPAirportIsDownloaded(icaoCode))
                 {
-                    log.Info("Getting scenery");
-
-                    if (airport.RecommendedSceneryId.HasValue)
-                    {
-                        var scenery = this.sceneryGatewayApi.GetScenery(airport.RecommendedSceneryId.Value);
-
-                        if (scenery != null && airport.AirportName.Length > 0)
-                        {
-                            var airportFullDirectory = GetAirportXPFullDirectory(airport);
-                            var airportZipFilename = airportFullDirectory + @"\" + airport.Icao + ".zip";
-                            var airportFilename = airportFullDirectory + @"\airport.xml";
-                            var airportSceneryFilename = airportFullDirectory + @"\scenery.xml";
-
-                            if (!Directory.Exists(airportFullDirectory))
-                            {
-                                Directory.CreateDirectory(airportFullDirectory);
-                            }
-
-                            File.WriteAllBytes(airportZipFilename, Convert.FromBase64String(scenery.MasterZipBlob));
-
-                            this.SerializeAirport(airport, airportFilename);
-
-                            scenery.MasterZipBlob = "";
-                            this.SerializeScenery(scenery, airportSceneryFilename);
-                        }
-                    }
-
-
+                    download = false;
+                    log.InfoFormat("Skipping airport {0}, already downloaded", icaoCode);
                 }
             }
 
-            catch (Exception)
+            if (download)
             {
-                log.ErrorFormat("Failed to download airport {0}", icaoCode);
+                log.InfoFormat("Downloading airport {0}", icaoCode);
+
+                try
+                {
+                    log.Info("Getting airport info");
+                    var airport = this.sceneryGatewayApi.GetAirport(icaoCode);
+
+                    if (airport != null)
+                    {
+                        log.Info("Getting scenery");
+
+                        if (airport.RecommendedSceneryId.HasValue)
+                        {
+                            var scenery = this.sceneryGatewayApi.GetScenery(airport.RecommendedSceneryId.Value);
+
+                            if (scenery != null && airport.AirportName.Length > 0)
+                            {
+                                var airportFullDirectory = GetAirportXPFullDirectory(airport);
+                                var airportZipFilename = airportFullDirectory + @"\" + airport.Icao + ".zip";
+                                var airportFilename = airportFullDirectory + @"\airport.xml";
+                                var airportSceneryFilename = airportFullDirectory + @"\scenery.xml";
+
+                                if (!Directory.Exists(airportFullDirectory))
+                                {
+                                    Directory.CreateDirectory(airportFullDirectory);
+                                }
+
+                                File.WriteAllBytes(airportZipFilename, Convert.FromBase64String(scenery.MasterZipBlob));
+
+                                this.SerializeAirport(airport, airportFilename);
+
+                                scenery.MasterZipBlob = "";
+                                this.SerializeScenery(scenery, airportSceneryFilename);
+                            }
+                        }
+
+
+                    }
+                }
+
+                catch (Exception)
+                {
+                    log.ErrorFormat("Failed to download airport {0}", icaoCode);
+                }
+
+                Random rnd = new Random();
+                var wait = rnd.Next(500, 2000);
+                System.Threading.Thread.Sleep(wait);
             }
+
+
         }
 
         private void ConvertAirports(List<string> icaoCodes)

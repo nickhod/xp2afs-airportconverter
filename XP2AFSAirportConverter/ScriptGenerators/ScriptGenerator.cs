@@ -26,6 +26,7 @@ namespace XP2AFSAirportConverter.ScriptGenerators
         /// </summary>
         protected void CalculateRunways()
         {
+            int i = 0;
             foreach (var runway in this.datFile.LandRunways)
             {
                 var scriptRunway = new ScriptRunway();
@@ -44,13 +45,16 @@ namespace XP2AFSAirportConverter.ScriptGenerators
                 var runwayPosition = GeoCoordinateToPoint(tscFile.Location, runwayMidPoint);
                 scriptRunway.X = runwayPosition.X;
                 scriptRunway.Y = runwayPosition.Y;
+                scriptRunway.Index = i;
 
                 this.scriptModel.Runways.Add(scriptRunway);
+                i++;
             }
         }
 
-        protected void CalculatePavements()
+        protected void CalculateDATFilePavements()
         {
+            int i = 0;
             foreach (var pavement in this.datFile.Pavements)
             {
                 var scriptPavement = new ScriptPavement();
@@ -68,13 +72,13 @@ namespace XP2AFSAirportConverter.ScriptGenerators
                     var nodeCoord = new GeoCoordinate(node.Latitude, node.Longitude);
                     var nodePosition = GeoCoordinateToPoint(tscFile.Location, nodeCoord);
 
-                    bool addNode = true;
+                    bool duplicate = false;
 
                     if (lastPosition != null)
                     {
                         if (nodePosition.X == lastPosition.X && nodePosition.Y == nodePosition.Y)
                         {
-                            addNode = false;
+                            duplicate = true;
                             Debug.WriteLine("duplicate");
                         }
                     }
@@ -88,6 +92,7 @@ namespace XP2AFSAirportConverter.ScriptGenerators
                     scriptNode.X = nodePosition.X;
                     scriptNode.Y = nodePosition.Y;
                     scriptNode.IsBezier = false;
+                    scriptNode.Render = true;
 
                     if (lastNodeWasCloseLoop)
                     {
@@ -114,29 +119,64 @@ namespace XP2AFSAirportConverter.ScriptGenerators
                         scriptNode.IsBezier = true;
                     }
 
-                    if (addNode)
+                    if (!duplicate)
                     {
                         lastScriptNode = scriptNode;
                         scriptPavement.Nodes.Add(scriptNode);
                     }
                     else
                     {
-                        if (scriptNode.CloseLoop)
+                        // This is a duplicate, but it's a bezier so we need to render it
+                        if (scriptNode.IsBezier)
                         {
-                            lastScriptNode.CloseLoop = true;
+                            //if (lastScriptNode.IsBezier)
+                            //{
+                            //    lastScriptNode = scriptNode;
+                            //    scriptPavement.Nodes.Add(scriptNode);
+                            //}
+                            //else
+                            //{
+
+                            //}
+
+                            lastScriptNode.Render = false;
+
+                            if (lastScriptNode.CloseLoop)
+                            {
+                                scriptNode.CloseLoop = true;
+                            }
+
+                            if (lastScriptNode.OpenLoop)
+                            {
+                                scriptNode.OpenLoop = true;
+                            }
+
+                            lastScriptNode = scriptNode;
+                            scriptPavement.Nodes.Add(scriptNode);
+                        }
+                        // Not a duplicate, don't add it so it wont be rendered
+                        else
+                        {
+                            if (scriptNode.CloseLoop)
+                            {
+                                lastScriptNode.CloseLoop = true;
+                            }
+
+                            if (scriptNode.OpenLoop)
+                            {
+                                lastScriptNode.OpenLoop = true;
+                            }
                         }
 
-                        if (scriptNode.OpenLoop)
-                        {
-                            lastScriptNode.OpenLoop = true;
-                        }
+
                     }
 
 
                 }
 
-                this.scriptModel.Pavements.Add(scriptPavement);
-
+                scriptPavement.Index = i;
+                this.scriptModel.DATPavements.Add(scriptPavement);
+                i++;
             }
 
 
