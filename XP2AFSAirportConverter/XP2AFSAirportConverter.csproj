@@ -32,6 +32,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="CsvHelper, Version=7.0.0.0, Culture=neutral, PublicKeyToken=8c4959082be5c823, processorArchitecture=MSIL">
+      <HintPath>packages\CsvHelper.7.1.1\lib\net45\CsvHelper.dll</HintPath>
+    </Reference>
     <Reference Include="DotLiquid, Version=2.0.271.0, Culture=neutral, PublicKeyToken=82e46016ecf9f07c, processorArchitecture=MSIL">
       <HintPath>packages\DotLiquid.2.0.271\lib\net45\DotLiquid.dll</HintPath>
     </Reference>
@@ -72,6 +75,7 @@
     <Compile Include="Common\BetterWebClient.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="Common\DirectoryHelper.cs" />
     <Compile Include="Common\GeoHelper.cs" />
     <Compile Include="Common\DoubleExtensions.cs" />
     <Compile Include="Common\EndianUtilities.cs" />
@@ -81,6 +85,8 @@
     <Compile Include="Common\Settings.cs" />
     <Compile Include="Converters\DATConverter.cs" />
     <Compile Include="Converters\DSFConverter.cs" />
+    <Compile Include="Models\AirportCsvListItem.cs" />
+    <Compile Include="Processors\AirportCsvListProcessor.cs" />
     <Compile Include="ResourceMapping\ResourceMap.cs" />
     <Compile Include="ResourceMapping\ResourceMapper.cs" />
     <Compile Include="SceneryGateway\Models\Airport.cs" />
@@ -92,8 +98,10 @@
     <Compile Include="ScriptGenerators\MaxScriptGenerator.cs" />
     <Compile Include="ScriptGenerators\Models\ScriptModel.cs" />
     <Compile Include="ScriptGenerators\ScriptGenerator.cs" />
+    <Compile Include="XP\DATFileLoader.cs" />
     <Compile Include="XP\DATFileParser.cs" />
     <Compile Include="XP\DSF2TextManager.cs" />
+    <Compile Include="XP\DSFFileLoader.cs" />
     <Compile Include="XP\DSFFileParser.cs" />
     <Compile Include="XP\DATFile.cs" />
     <Compile Include="XP\DSFFile.cs" />

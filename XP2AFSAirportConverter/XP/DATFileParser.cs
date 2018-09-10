@@ -250,6 +250,7 @@ http://developer.x-plane.com/wp-content/uploads/2015/11/XP-APT1000-Spec.pdf
                                 this.SaveTemporaryNodeCollection();
                                 break;
                             case RowCode.Metadata:
+                                this.ParseMetadata(data);
                                 this.SaveTemporaryNodeCollection();
                                 break;
                             default:
@@ -313,7 +314,7 @@ http://developer.x-plane.com/wp-content/uploads/2015/11/XP-APT1000-Spec.pdf
         }
 
         private void ParseLandRunway(string[] data)
-        {
+        {            
             if (data.Length >= 26)
             {
                 var landRunway = new LandRunway();
@@ -519,9 +520,28 @@ http://developer.x-plane.com/wp-content/uploads/2015/11/XP-APT1000-Spec.pdf
 
         private void ParseMetadata(string[] data)
         {
-            if (data.Length >= 6)
+            if (data.Length > 1)
             {
+                if (this.datFile.Metadata == null)
+                {
+                    this.datFile.Metadata = new List<Metadata>();
+                }
 
+                string key = data[1];
+                string value = data[2];
+
+                if (data.Length > 3)
+                {
+                    for(int i =3; i < data.Length; i++)
+                    {
+                        value = value + " " + data[i];
+                    }
+                }
+
+                var metadata = new Metadata();
+                metadata.Key = key;
+                metadata.Value = value;
+                this.datFile.Metadata.Add(metadata);
             }
             else
 
@@ -599,7 +619,7 @@ http://developer.x-plane.com/wp-content/uploads/2015/11/XP-APT1000-Spec.pdf
 
         private void ParsePavement(string[] data)
         {
-            if (data.Length >= 6)
+            if (data.Length >= 5)
             {
                 var pavement = new Pavement();
 

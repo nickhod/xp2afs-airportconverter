@@ -21,7 +21,32 @@ namespace XP2AFSAirportConverter.XP
         public AirportBoundary AirportBoundary { get; set; }
         public IList<Pavement> Pavements { get; set; }
         public IList<LinearFeature> LinearFeatures { get; set; }
+        public IList<Metadata> Metadata { get; set; }
 
+        public Dictionary<string, string> MetadataLookup
+        {
+            get
+            {
+                Dictionary<string, string> lookup = new Dictionary<string, string>();
+
+                if (this.Metadata != null)
+                {
+                    foreach (var metadata in this.Metadata)
+                    {
+                        lookup.Add(metadata.Key, metadata.Value);
+                    }
+                }
+
+                return lookup;
+
+            }
+        }
+    }
+
+    public class Metadata
+    {
+        public string Key { get; set; }
+        public string Value { get; set; }
     }
 
     public class AirportHeader
@@ -282,10 +307,5 @@ namespace XP2AFSAirportConverter.XP
     public class ATCDeparture
     {
 
-    }
-
-    public class Metadata
-    {
-        public Dictionary<string, string> Values { get; set; }
     }
 }

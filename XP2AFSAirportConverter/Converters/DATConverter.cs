@@ -27,19 +27,23 @@ namespace XP2AFSAirportConverter.Converters
             tscFile.AirportLongName = datFile.AirportHeader.Name;
             tscFile.AirportShortName = datFile.AirportHeader.Name;
 
-            foreach (var landRunway in datFile.LandRunways)
+            if (datFile.LandRunways != null)
             {
-                TSCRunway runway = new TSCRunway();
-                runway.Width = landRunway.Width;
+                foreach (var landRunway in datFile.LandRunways)
+                {
+                    TSCRunway runway = new TSCRunway();
+                    runway.Width = landRunway.Width;
 
-                runway.End1 = new TSCRunwayEnd();
-                runway.End2 = new TSCRunwayEnd();
+                    runway.End1 = new TSCRunwayEnd();
+                    runway.End2 = new TSCRunwayEnd();
 
-                ConvertRunwayEnd(runway.End1, landRunway.End1);
-                ConvertRunwayEnd(runway.End2, landRunway.End2);
+                    ConvertRunwayEnd(runway.End1, landRunway.End1);
+                    ConvertRunwayEnd(runway.End2, landRunway.End2);
 
-                tscFile.Runways.Add(runway);
+                    tscFile.Runways.Add(runway);
+                }
             }
+
 
             tscFile.Location = this.CalculateAirportCenterPoint();
         }

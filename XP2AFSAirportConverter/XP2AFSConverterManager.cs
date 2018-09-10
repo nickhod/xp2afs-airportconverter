@@ -1,4 +1,5 @@
-﻿using ICSharpCode.SharpZipLib.Core;
+﻿using CsvHelper;
+using ICSharpCode.SharpZipLib.Core;
 using ICSharpCode.SharpZipLib.Zip;
 using log4net;
 using System;
@@ -16,6 +17,7 @@ using XP2AFSAirportConverter.AFS;
 using XP2AFSAirportConverter.Common;
 using XP2AFSAirportConverter.Converters;
 using XP2AFSAirportConverter.Models;
+using XP2AFSAirportConverter.Processors;
 using XP2AFSAirportConverter.ResourceMapping;
 using XP2AFSAirportConverter.SceneryGateway;
 using XP2AFSAirportConverter.SceneryGateway.Models;
@@ -26,9 +28,10 @@ namespace XP2AFSAirportConverter
 {
     public class XP2AFSConverterManager
     {
+        public static Settings Settings;
+
         private readonly ILog log = LogManager.GetLogger("XP2AFSAirportConverter");
         private SceneryGatewayApi sceneryGatewayApi;
-        private Settings settings;
 
         private Dictionary<string, AirportListItem> airportLookup;
 
@@ -43,7 +46,7 @@ namespace XP2AFSAirportConverter
 
         public XP2AFSConverterManager()
         {
-            this.settings = new Settings();
+            Settings = new Settings();
             this.datConverter = new DATConverter();
             this.dsfConverter = new DSFConverter();
             this.actions = new List<ConverterAction>();
@@ -63,13 +66,13 @@ namespace XP2AFSAirportConverter
             this.ParseArgs(args);
 
             this.resourceMapper = new ResourceMapper();
-            this.resourceMapper.ReadResourceMapping(settings.ResourceMapPath);
+            this.resourceMapper.ReadResourceMapping(Settings.ResourceMapPath);
 
             this.sceneryGatewayApi = new SceneryGatewayApi();
 
             foreach (ConverterAction action in this.actions)
             {
-                switch(action)
+                switch (action)
                 {
                     case ConverterAction.ConvertAirports:
                         log.Info("Starting Convert Airports action");
@@ -91,7 +94,10 @@ namespace XP2AFSAirportConverter
                         //https://github.com/StevenBonePgh/SevenZipSharp
                         //https://github.com/sshnet/SSH.NET
                         break;
-                      
+                    case ConverterAction.AirportCsvList:
+                        this.GenerateAirportCsvList();
+                        break;
+
                 }
             }
 
@@ -101,7 +107,7 @@ namespace XP2AFSAirportConverter
         {
             if (args.Length > 0)
             {
-                switch(args[0])
+                switch (args[0])
                 {
                     case "getlist":
                         this.actions.Add(ConverterAction.GetAirportList);
@@ -111,6 +117,9 @@ namespace XP2AFSAirportConverter
                         break;
                     case "convert":
                         this.actions.Add(ConverterAction.ConvertAirports);
+                        break;
+                    case "airportcsvlist":
+                        this.actions.Add(ConverterAction.AirportCsvList);
                         break;
                 }
 
@@ -165,10 +174,10 @@ namespace XP2AFSAirportConverter
                 Directory.CreateDirectory(tempFolder);
             }
 
-            this.settings.XP2AFSConverterFolder = xp2AFSConverterFolder;
-            this.settings.XPlaneXP2AFSConverterFolder = xplaneXP2AFSConverterFolder;
-            this.settings.AFSXP2AFSConverterFolder = afsXP2AFSConverterFolder;
-            this.settings.TempFolder = tempFolder;
+            Settings.XP2AFSConverterFolder = xp2AFSConverterFolder;
+            Settings.XPlaneXP2AFSConverterFolder = xplaneXP2AFSConverterFolder;
+            Settings.AFSXP2AFSConverterFolder = afsXP2AFSConverterFolder;
+            Settings.TempFolder = tempFolder;
 
         }
 
@@ -183,12 +192,12 @@ namespace XP2AFSAirportConverter
                 xpToolsPath = xpToolsPathRaw.Replace("{MyDocuments}", documentsFolder);
             }
 
-            settings.XPToolsPath = xpToolsPath;
+            Settings.XPToolsPath = xpToolsPath;
 
             // Currently doesn't support absolute paths
             string resourceMapPath = System.Configuration.ConfigurationManager.AppSettings["ResourceMap"];
             resourceMapPath = AppDomain.CurrentDomain.BaseDirectory + resourceMapPath;
-            settings.ResourceMapPath = resourceMapPath;
+            Settings.ResourceMapPath = resourceMapPath;
 
         }
 
@@ -218,7 +227,7 @@ namespace XP2AFSAirportConverter
                 writer.Flush();
 
                 //if the serialization succeed, rewrite the file.
-                File.WriteAllBytes(this.settings.XP2AFSConverterFolder + @"xp_airports.xml", ms.ToArray());
+                File.WriteAllBytes(Settings.XP2AFSConverterFolder + @"xp_airports.xml", ms.ToArray());
             }
         }
 
@@ -233,36 +242,15 @@ namespace XP2AFSAirportConverter
 
                 log.Info("No airports specified so downloading all airports");
 
+                var airportsFile = Settings.XP2AFSConverterFolder + @"xp_airports.xml";
 
-                var airportsFile = this.settings.XP2AFSConverterFolder + @"xp_airports.xml";
-                if (File.Exists(airportsFile))
+                var airportList = this.DeserializeAirportsFile(airportsFile);
+                this.airportLookup = new Dictionary<string, AirportListItem>();
+
+                foreach (AirportListItem airport in airportList.Airports)
                 {
-                    log.Info("Loading airports from file");
-
-                    var airportList = new AirportList();
-                    this.airportLookup = new Dictionary<string, AirportListItem>();
-
-                    // Annoying special characters issue.
-                    // Not sure why these don't work given that we're using UTF8 to encode and decode
-                    var airportFileString = File.ReadAllText(airportsFile);
-                    airportFileString = Regex.Replace(airportFileString, @"&#x?[^;]{1,6};", string.Empty);
-
-                    using (MemoryStream memoryStream = new MemoryStream(Encoding.UTF8.GetBytes(airportFileString)))
-                    {
-                        XmlSerializer xmlSerializer = new XmlSerializer(typeof(AirportList));
-                        StreamReader reader = new StreamReader(memoryStream, Encoding.UTF8);
-                        airportList = (AirportList)xmlSerializer.Deserialize(reader);
-                    }
-
-                    foreach (AirportListItem airport in airportList.Airports)
-                    {
-                        icaoCodes.Add(airport.AirportCode);
-                        this.airportLookup.Add(airport.AirportCode, airport);
-                    }
-                }
-                else
-                {
-                    log.Info("Airport file not found");
+                    icaoCodes.Add(airport.AirportCode);
+                    this.airportLookup.Add(airport.AirportCode, airport);
                 }
 
             }
@@ -280,7 +268,7 @@ namespace XP2AFSAirportConverter
 
         private bool CheckIfXPAirportIsDownloaded(string icaoCode)
         {
-            var airportFullDirectory = GetAirportXPFullDirectory(icaoCode);
+            var airportFullDirectory = DirectoryHelper.GetAirportXPFullDirectory(icaoCode, Settings);
             var airportZipFilename = airportFullDirectory + @"\" + icaoCode + ".zip";
             var airportFilename = airportFullDirectory + @"\airport.xml";
             var airportSceneryFilename = airportFullDirectory + @"\scenery.xml";
@@ -338,7 +326,7 @@ namespace XP2AFSAirportConverter
 
                             if (scenery != null && airport.AirportName.Length > 0)
                             {
-                                var airportFullDirectory = GetAirportXPFullDirectory(airport);
+                                var airportFullDirectory = DirectoryHelper.GetAirportXPFullDirectory(airport, Settings);
                                 var airportZipFilename = airportFullDirectory + @"\" + airport.Icao + ".zip";
                                 var airportFilename = airportFullDirectory + @"\airport.xml";
                                 var airportSceneryFilename = airportFullDirectory + @"\scenery.xml";
@@ -390,12 +378,12 @@ namespace XP2AFSAirportConverter
         {
             log.InfoFormat("Converting {0}", icaoCode);
 
-            var airportXPFullDirectory = this.GetAirportXPFullDirectory(icaoCode);
+            var airportXPFullDirectory = DirectoryHelper.GetAirportXPFullDirectory(icaoCode, Settings);
             var airportZipFilename = airportXPFullDirectory + @"\" + icaoCode + ".zip";
             var airportFilename = airportXPFullDirectory + @"\airport.xml";
             var airportSceneryFilename = airportXPFullDirectory + @"\scenery.xml";
 
-            var airportAFSFullDirectory = this.GetAirportAFSFullDirectory(icaoCode);
+            var airportAFSFullDirectory = DirectoryHelper.GetAirportAFSFullDirectory(icaoCode, Settings);
 
             var tscFilename = airportAFSFullDirectory + @"\" + icaoCode + ".tsc";
             var tocFilename = airportAFSFullDirectory + @"\" + icaoCode + ".toc";
@@ -404,8 +392,10 @@ namespace XP2AFSAirportConverter
             if (File.Exists(airportZipFilename))
             {
                 // Parse the DST and DAT files
-                var datFile = this.GetDATFileFromXPZip(icaoCode, airportZipFilename);
-                var dsfFile = this.GetDSFFileFromXPZip(icaoCode, airportZipFilename);
+                var datFileLoader = new DATFileLoader();
+                var dsfFileLoader = new DSFFileLoader();
+                var datFile = datFileLoader.GetDATFileFromXPZip(icaoCode, airportZipFilename);
+                var dsfFile = dsfFileLoader.GetDSFFileFromXPZip(icaoCode, airportZipFilename);
 
                 // Create empty AFS files
                 var tscFile = new TSCFile();
@@ -442,26 +432,19 @@ namespace XP2AFSAirportConverter
             }
         }
 
-        private string GetAirportXPFullDirectory(Airport airport)
+        private void GenerateAirportCsvList()
         {
-            var airportFirstLetter = airport.Icao[0];
-            var airportFullDirectory = this.settings.XPlaneXP2AFSConverterFolder + airportFirstLetter + @"\" + airport.Icao;
-            return airportFullDirectory;
+            log.Info("Generating Airport CSV File");
+
+            AirportCsvListProcessor csvListProcessor = new AirportCsvListProcessor();
+
+            var airportsFile = Settings.XP2AFSConverterFolder + @"xp_airports.xml";
+            var airportList = this.DeserializeAirportsFile(airportsFile);
+
+            csvListProcessor.GenerateAirportCsvList(airportList);
         }
 
-        private string GetAirportXPFullDirectory(string icaoCode)
-        {
-            var airportFirstLetter = icaoCode[0];
-            var airportFullDirectory = this.settings.XPlaneXP2AFSConverterFolder + airportFirstLetter + @"\" + icaoCode;
-            return airportFullDirectory;
-        }
 
-        private string GetAirportAFSFullDirectory(string icaoCode)
-        {
-            var airportFirstLetter = icaoCode[0];
-            var airportFullDirectory = this.settings.AFSXP2AFSConverterFolder + airportFirstLetter + @"\" + icaoCode;
-            return airportFullDirectory;
-        }
 
         private void SerializeAirport(Airport airport, string filename)
         {
@@ -491,111 +474,35 @@ namespace XP2AFSAirportConverter
             }
         }
 
-        private DATFile GetDATFileFromXPZip(string icaoCode, string xpZipFilename)
+        private AirportList DeserializeAirportsFile(string airportsFile)
         {
-            string datFileData = "";
+            AirportList airportList = null;
 
-            using (var fileStream = new FileStream(xpZipFilename, FileMode.Open, FileAccess.Read))
+            if (File.Exists(airportsFile))
             {
-                using (var zipFile = new ZipFile(fileStream))
-                {
-                    var zipEntry = zipFile.GetEntry(icaoCode + ".dat");
-                    if (zipEntry == null)
-                    {
-                        log.ErrorFormat("{0}.dat not found in zip", icaoCode);
-                    }
+                log.Info("Loading airports from file");
 
-                    using (var stream = zipFile.GetInputStream(zipEntry))
-                    {
-                        using (var reader = new StreamReader(stream))
-                        {
-                            datFileData = reader.ReadToEnd();
-                        }
-                    }
+                // Annoying special characters issue.
+                // Not sure why these don't work given that we're using UTF8 to encode and decode
+                var airportFileString = File.ReadAllText(airportsFile);
+                airportFileString = Regex.Replace(airportFileString, @"&#x?[^;]{1,6};", string.Empty);
+
+                using (MemoryStream memoryStream = new MemoryStream(Encoding.UTF8.GetBytes(airportFileString)))
+                {
+                    XmlSerializer xmlSerializer = new XmlSerializer(typeof(AirportList));
+                    StreamReader reader = new StreamReader(memoryStream, Encoding.UTF8);
+                    airportList = (AirportList)xmlSerializer.Deserialize(reader);
                 }
             }
-
-            var datFileParser = new DATFileParser();
-            var datFile = datFileParser.ParseFromString(datFileData);
-            return datFile;
-        }
-
-        private DSFFile GetDSFFileFromXPZip(string icaoCode, string xpZipFilename)
-        {
-            // Fun and games, the DSF file is in the hierarchy
-            // ICAO.zip
-            //   ICAO_Scenery_Pack.zip
-            //     ICAO_Scenery_Pack (dir)
-            //       Earth nav data
-            //         -60-080 (this is not fixed)
-            //           -52-073.dsf (this is not fixed)
-
-            byte[] dsfFileData = null;
-
-            using (var fileStream = new FileStream(xpZipFilename, FileMode.Open, FileAccess.Read))
+            else
             {
-                using (var zipFile = new ZipFile(fileStream))
-                {
-                    var innerZipName = String.Format("{0}_Scenery_Pack.zip", icaoCode);
-                    var zipEntry = zipFile.GetEntry(innerZipName);
-                    if (zipEntry == null)
-                    {
-                        log.ErrorFormat("{0} not found in zip", innerZipName);
-                    }
-
-
-                    using (var stream = zipFile.GetInputStream(zipEntry))
-                    {
-                        // The stream above is not seekable. We need to copy it to a memory
-                        // stream first, then we can instantiate another ZipFile object from
-                        // the memory stream
-                        using (var memoryStream = new MemoryStream())
-                        {
-                            stream.CopyTo(memoryStream);
-                            memoryStream.Position = 0;
-
-                            using (var innerZipFile = new ZipFile(memoryStream))
-                            {
-                                foreach (ZipEntry innerZipEntry in innerZipFile)
-                                {
-                                    if (zipEntry.IsDirectory)
-                                        continue;
-
-                                    //log.Debug(innerZipEntry.Name);
-
-                                    if (innerZipEntry.Name.Contains(".dsf"))
-                                    {
-                                        using (Stream dsfFileStream = innerZipFile.GetInputStream(innerZipEntry))
-                                        {
-                                            // Get the bytes of the dsf file
-                                            using (MemoryStream dsfFileMemoryStream = new MemoryStream())
-                                            {
-                                                byte[] buffer = new byte[4096];
-                                                StreamUtils.Copy(dsfFileStream, dsfFileMemoryStream, buffer);
-                                                dsfFileData = dsfFileMemoryStream.ToArray();
-                                            }
-  
-                                        }
-                                    }
-
-
-                                }
-                            }
-                        }
-                    }
-
-                }
+                log.Info("Airport file not found");
             }
 
-            var dsf2TextManager = new DSF2TextManager();
-            var dsfAsText = dsf2TextManager.GetTextDSFFile(dsfFileData, settings);
-
-            var dsfTextFileParser = new DSFTextFileParser();
-            var dsfFile = dsfTextFileParser.ParseFromString(dsfAsText);
-
-            dsfAsText = null;
-            dsfFileData = null;
-            return dsfFile;
+            return airportList;
         }
+
+
+
     }
 }
