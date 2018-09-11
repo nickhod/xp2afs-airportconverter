@@ -21,15 +21,16 @@ namespace XP2AFSAirportConverter
 
             if (args.Length == 0)
             {
-                log.Info("Usage: XP2AFSAirportConverter <command> <options>");
-                log.Info("");
-                log.Info("XP2AFSAirportConverter getlist");
-                log.Info("XP2AFSAirportConverter download");
-                log.Info("XP2AFSAirportConverter download overwrite");
-                log.Info("XP2AFSAirportConverter convert all");
-                log.Info("XP2AFSAirportConverter convert EGFF,KPDX");
-                log.Info("XP2AFSAirportConverter getlist");
-                log.Info("XP2AFSAirportConverter airportcsvlist");
+                Console.WriteLine("Usage: XP2AFSAirportConverter <command> <options>");
+                Console.WriteLine("");
+                Console.WriteLine("XP2AFSAirportConverter getlist");
+                Console.WriteLine("XP2AFSAirportConverter download");
+                Console.WriteLine("XP2AFSAirportConverter download overwrite");
+                Console.WriteLine("XP2AFSAirportConverter convert all");
+                Console.WriteLine("XP2AFSAirportConverter convert EGFF,KPDX");
+                Console.WriteLine("XP2AFSAirportConverter getlist");
+                Console.WriteLine("XP2AFSAirportConverter airportcsvlist");
+                Console.WriteLine("XP2AFSAirportConverter importairportcsvlist");
             }
             else
             {

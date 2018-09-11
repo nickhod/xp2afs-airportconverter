@@ -101,7 +101,7 @@ namespace XP2AFSAirportConverter.Processors
 
                             if (datFile.MetadataLookup.ContainsKey("city"))
                             {
-                                airportListItem.Region = datFile.MetadataLookup["city"];
+                                airportListItem.City = datFile.MetadataLookup["city"];
                             }
 
                             if (datFile.MetadataLookup.ContainsKey("region_code"))

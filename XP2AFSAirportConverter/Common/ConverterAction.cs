@@ -14,6 +14,7 @@ namespace XP2AFSAirportConverter.Common
         ConvertAirportsStep1,
         ConvertAirportsStep2,
         CompressAndUploadAirports,
-        AirportCsvList
+        AirportCsvList,
+        ImportAirportCsvList,
     }
 }

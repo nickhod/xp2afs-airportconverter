@@ -97,10 +97,20 @@ namespace XP2AFSAirportConverter
                     case ConverterAction.AirportCsvList:
                         this.GenerateAirportCsvList();
                         break;
+                    case ConverterAction.ImportAirportCsvList:
+                        this.ImportAirportCsvList();
+                        break;
 
                 }
             }
 
+        }
+
+        private void ImportAirportCsvList()
+        {
+            var airportCsvListImportProcessor = new AirportCsvListImportProcessor();
+            var csvFile = XP2AFSConverterManager.Settings.XP2AFSConverterFolder + @"airports.csv";
+            airportCsvListImportProcessor.ImportAirportCsvList(csvFile);
         }
 
         private void ParseArgs(string[] args)
@@ -120,6 +130,9 @@ namespace XP2AFSAirportConverter
                         break;
                     case "airportcsvlist":
                         this.actions.Add(ConverterAction.AirportCsvList);
+                        break;
+                    case "importairportcsvlist":
+                        this.actions.Add(ConverterAction.ImportAirportCsvList);
                         break;
                 }
 

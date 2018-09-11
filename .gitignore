@@ -35,3 +35,6 @@
 /Utils/ObjectMapGenerator/.vs/ObjectMapGenerator/v15/*.suo
 /XP2AFSAirportConverter/.vs/XP2AFSAirportConverter/v15/Server/sqlite3
 /XP2AFSAirportConverter/packages/CsvHelper.7.1.1
+/XP2AFSAirportConverter/packages/EntityFramework.6.2.0
+/XP2AFSAirportConverter/packages/MySql.Data.6.10.8
+/XP2AFSAirportConverter/packages/MySql.Data.Entity.6.10.8
