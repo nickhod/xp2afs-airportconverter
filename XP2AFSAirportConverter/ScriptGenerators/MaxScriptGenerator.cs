@@ -37,7 +37,7 @@ namespace XP2AFSAirportConverter.ScriptGenerators
             Template.NamingConvention = new CSharpNamingConvention();
             var maxScriptFinal = template.Render(Hash.FromAnonymousObject(scriptModel));
 
-            var outputFilePath = outputFolder + @"\Input\" + icao  + ".ms";
+            var outputFilePath = outputFolder + @"\Input\" + icao  + ".py";
 
             File.WriteAllText(outputFilePath, maxScriptFinal);
 

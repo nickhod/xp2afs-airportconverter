@@ -15,6 +15,7 @@ namespace XP2AFSAirportConverter.Common
 
         // Convert steps
         GenerateRenderScripts,
+        RunRenderScripts,
         BuildAirports,
         UploadAirports
     }

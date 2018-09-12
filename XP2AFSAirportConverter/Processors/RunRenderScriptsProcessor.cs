@@ -6,16 +6,13 @@ using System.Threading.Tasks;
 
 namespace XP2AFSAirportConverter.Processors
 {
-    public class UploadAirportsProcessor
+    public class RunRenderScriptsProcessor
     {
-        //https://github.com/StevenBonePgh/SevenZipSharp
-        //https://github.com/sshnet/SSH.NET
-
-        public UploadAirportsProcessor()
+        public RunRenderScriptsProcessor()
         {
         }
 
-        public void UploadAirports(List<string> icaoCodes)
+        public void RunRenderScripts(List<string> icaoCodes)
         {
             int i = 0;
             foreach (string icaoCode in icaoCodes)

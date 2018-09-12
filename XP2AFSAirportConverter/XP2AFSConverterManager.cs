@@ -78,6 +78,11 @@ namespace XP2AFSAirportConverter
                         this.GenerateRenderScripts(icaoCodes);
                         log.Info("Finished Generate Render Scripts action");
                         break;
+                    case ConverterAction.RunRenderScripts:
+                        log.Info("Starting Run Render Scripts action");
+                        this.RunRenderScripts(icaoCodes);
+                        log.Info("Finished Run Render Scripts action");
+                        break;
                     case ConverterAction.BuildAirports:
                         log.Info("Starting Build Airports action");
                         this.BuildAirports();
@@ -125,14 +130,22 @@ namespace XP2AFSAirportConverter
             generateRenderScriptProcessor.ConvertAirports(icaoCodes);
         }
 
+        private void RunRenderScripts(List<string> icaoCodes)
+        {
+            var runRenderScriptProcessor = new RunRenderScriptsProcessor();
+            runRenderScriptProcessor.RunRenderScripts(icaoCodes);
+        }
+
         private void BuildAirports()
         {
-
+            var buildAirportsProcessor = new BuildAirportsProcessor();
+            buildAirportsProcessor.BuildAirports(icaoCodes);
         }
 
         private void UploadAirports()
         {
-
+            var uploadAirportsProcessor = new UploadAirportsProcessor();
+            uploadAirportsProcessor.UploadAirports(icaoCodes);
         }
 
         private void GenerateAirportCsvList()

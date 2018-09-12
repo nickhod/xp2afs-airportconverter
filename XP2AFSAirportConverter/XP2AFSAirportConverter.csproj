@@ -114,9 +114,10 @@
     <Compile Include="Processors\AirportCsvListImportProcessor.cs" />
     <Compile Include="Processors\AirportCsvListProcessor.cs" />
     <Compile Include="Processors\AirportListProcessor.cs" />
-    <Compile Include="Processors\BuildAirportProcessor.cs" />
+    <Compile Include="Processors\BuildAirportsProcessor.cs" />
     <Compile Include="Processors\DownloadAirportsProcessor.cs" />
     <Compile Include="Processors\GenerateRenderScriptsProcessor.cs" />
+    <Compile Include="Processors\RunRenderScriptsProcessor.cs" />
     <Compile Include="Processors\UploadAirportsProcessor.cs" />
     <Compile Include="ResourceMapping\ResourceMap.cs" />
     <Compile Include="ResourceMapping\ResourceMapper.cs" />

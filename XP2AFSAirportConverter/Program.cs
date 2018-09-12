@@ -36,6 +36,10 @@ namespace XP2AFSAirportConverter
                 Console.WriteLine("XP2AFSAirportConverter generaterenderscripts EGFF,KPDX");
                 Console.WriteLine("XP2AFSAirportConverter generaterenderscripts \"C:\\Temp\\icao.txt\"");
                 Console.WriteLine("");
+                Console.WriteLine("-- Run render scripts for specified airports");
+                Console.WriteLine("XP2AFSAirportConverter runrenderscripts EGFF,KPDX");
+                Console.WriteLine("XP2AFSAirportConverter runrenderscripts \"C:\\Temp\\icao.txt\"");
+                Console.WriteLine("");
                 Console.WriteLine("-- Build specified airports");
                 Console.WriteLine("XP2AFSAirportConverter buildairports EGFF,KPDX");
                 Console.WriteLine("XP2AFSAirportConverter buildairports \"C:\\Temp\\icao.txt\"");
