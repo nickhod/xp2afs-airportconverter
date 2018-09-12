@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -29,5 +30,33 @@ namespace XP2AFSAirportConverter.Common
             var airportFullDirectory = settings.AFSXP2AFSConverterFolder + airportFirstLetter + @"\" + icaoCode;
             return airportFullDirectory;
         }
+
+        public static bool CheckIfXPAirportIsDownloaded(string icaoCode, Settings settings)
+        {
+            var airportFullDirectory = DirectoryHelper.GetAirportXPFullDirectory(icaoCode, settings);
+            var airportZipFilename = airportFullDirectory + @"\" + icaoCode + ".zip";
+            var airportFilename = airportFullDirectory + @"\airport.xml";
+            var airportSceneryFilename = airportFullDirectory + @"\scenery.xml";
+
+            bool airportExists = true;
+
+            if (!File.Exists(airportZipFilename))
+            {
+                airportExists = false;
+            }
+
+            if (!File.Exists(airportFilename))
+            {
+                airportExists = false;
+            }
+
+            if (!File.Exists(airportSceneryFilename))
+            {
+                airportExists = false;
+            }
+
+            return airportExists;
+        }
+
     }
 }
