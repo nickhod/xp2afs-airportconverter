@@ -15,6 +15,8 @@ namespace XP2AFSAirportConverter.ScriptGenerators.Models
         public double Y { get; set; }
         public double Angle { get; set; }
         public int Index { get; set; }
+        public string SurfaceType { get; set; }
+        public string ShoulderType { get; set; }
     }
 
     public class ScriptPavement : Drop
@@ -61,5 +63,6 @@ namespace XP2AFSAirportConverter.ScriptGenerators.Models
         public string AirportName { get; set; }
         public string AirportICAO { get; set; }
         public DateTime GeneratedOn { get; set; }
+        public string SaveFilePath { get; set; }
     }
 }

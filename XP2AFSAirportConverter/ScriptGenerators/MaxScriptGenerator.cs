@@ -32,6 +32,8 @@ namespace XP2AFSAirportConverter.ScriptGenerators
             this.scriptModel.AirportName = datFile.AirportHeader.Name;
             this.scriptModel.AirportICAO = datFile.AirportHeader.ICAOCode;
             this.scriptModel.GeneratedOn = DateTime.UtcNow;
+            this.scriptModel.SaveFilePath = outputFolder + @"\Input\" + icao + ".max";
+            this.scriptModel.SaveFilePath = this.scriptModel.SaveFilePath.Replace(@"\", @"\\");
 
             Template template = Template.Parse(maxScript);
             Template.NamingConvention = new CSharpNamingConvention();
