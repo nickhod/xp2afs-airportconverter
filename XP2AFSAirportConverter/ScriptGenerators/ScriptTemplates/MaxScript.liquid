@@ -105,6 +105,14 @@ def drawRunways():
 # Draw Runway Decals
 #########################################################
 def drawRunwayDecals():
+    {% for runway in Runways -%}
+    drawSingleRunwayDecals("Runway {{runway.Index | Plus:1 }}")
+    {% endfor -%}
+
+#########################################################
+# Draw Single Runway Decals
+#########################################################
+def drawSingleRunwayDecals(name):
     pass
 
 #########################################################
@@ -163,12 +171,26 @@ def convertDSFFilePavementSplinesToEditablePolys():
 # Texture Runways
 #########################################################
 def textureRunways():
+    {% for runway in Runways -%}
+    textureRunway("Runway {{runway.Index | Plus:1 }}", {{runway.Length}}, {{runway.Width}}, "{{runway.SurfaceType}}", "{{runway.ShoulderType}}")
+    {% endfor -%}
+
+#########################################################
+# Texture Runway
+#########################################################
+def textureRunway(name, length, width, surfaceType, shoulderType):
     pass
 
 #########################################################
 # Texture Runway Decals
 #########################################################
 def textureRunwayDecals():
+    pass
+
+#########################################################
+# Texture Runway Decals
+#########################################################
+def textureSingleRunwayDecals(name):
     pass
 
 #########################################################
@@ -256,6 +278,3 @@ def main():
         maxScript("saveMaxFile \"{0}\" saveAsVersion:2016".format(saveFilePath))
 
 main()
-
-
-{% comment %}

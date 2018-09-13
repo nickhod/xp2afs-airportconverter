@@ -30,13 +30,22 @@ namespace XP2AFSAirportConverter.ScriptGenerators
             foreach (var runway in this.datFile.LandRunways)
             {
                 var scriptRunway = new ScriptRunway();
-                scriptRunway.Width = runway.Width;
+
+                double runwayShoulderSize = 0;
+
+                // Might be wrong but X-Plane seems to use around 1/5th of the runway width as a shoulder
+                if (runway.ShoulderType != ShoulderType.NoShoulder)
+                {
+                    runwayShoulderSize = runway.Width / 5;
+                }
+
+                scriptRunway.Width = runway.Width + (runwayShoulderSize*2);
 
                 var end1Coord = new GeoCoordinate(runway.End1.Latitude, runway.End1.Longitude);
                 var end2Coord = new GeoCoordinate(runway.End2.Latitude, runway.End2.Longitude);
 
                 var runwayLength = end1Coord.GetDistanceTo(end2Coord);
-                scriptRunway.Length = runwayLength;
+                scriptRunway.Length = runwayLength + (runwayShoulderSize * 2);
 
                 var angle = GeoHelper.DegreeBearing(end1Coord, end2Coord);
                 scriptRunway.Angle = -angle;
@@ -46,6 +55,38 @@ namespace XP2AFSAirportConverter.ScriptGenerators
                 scriptRunway.X = runwayPosition.X;
                 scriptRunway.Y = runwayPosition.Y;
                 scriptRunway.Index = i;
+
+                switch (runway.ShoulderType)
+                {
+                    case ShoulderType.AsphaltShoulder:
+                        scriptRunway.ShoulderType = "asphalt";
+                        break;
+                    case ShoulderType.ConcreneShoulder:
+                        scriptRunway.ShoulderType = "concrete";
+                        break;
+                    case ShoulderType.NoShoulder:
+                        scriptRunway.ShoulderType = "none";
+                        break;
+                }
+
+                switch (runway.SurfaceType)
+                {
+                    case SurfaceType.Asphalt:
+                        scriptRunway.SurfaceType = "asphalt";
+                        break;
+                    case SurfaceType.Concrete:
+                        scriptRunway.SurfaceType = "concrete";
+                        break;
+                    case SurfaceType.Grass:
+                    case SurfaceType.Dirt:
+                    case SurfaceType.Gravel:
+                    case SurfaceType.DryLakeBed:
+                    case SurfaceType.Water:
+                    case SurfaceType.SnowOrIce:
+                    case SurfaceType.Transparent:
+                        scriptRunway.SurfaceType = "transparent";
+                        break;
+                }
 
                 this.scriptModel.Runways.Add(scriptRunway);
                 i++;
