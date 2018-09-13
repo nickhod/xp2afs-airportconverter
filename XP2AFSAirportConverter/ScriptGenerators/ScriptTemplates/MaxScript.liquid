@@ -20,10 +20,16 @@ import pymxs
 # This allows for manual editing between actions
 drawRunways = True
 drawRunwayDecals = True
-drawPavementSplines = True
+drawDATFilePavementSplines = True
 drawLinearFeaturesSplines = True
-convertPavementSplinesToEditablePolys = True
+drawDSFFilePavementSplines = True
+drawDSFFileBuildings = True
+drawSigns = True
+
+convertDATFilePavementSplinesToEditablePolys = True
 convertLinearFeaturesSplinesToEditablePolys = True
+convertDSFFilePavementSplinesToEditablePolys = True
+
 textureRunways = True
 textureRunwayDecals = True
 texturePavements = True
@@ -43,6 +49,7 @@ def drawRunway(x, y, length, width, angle, name):
 	node.Name = name
 	maxScript("rotate $'{0}' (angleaxis {1} [0,0,1])".format(name, angle))
 	node.Position = MaxPlus.Point3(x, y, 0)
+	node.Convert(MaxPlus.ClassIds.PolyMeshObject)
 
 #########################################################
 # Draw Runways
@@ -59,21 +66,45 @@ def drawRunwayDecals():
     pass
 
 #########################################################
-# Draw Pavement Splines
+# Draw DAT File Pavement Splines
 #########################################################
-def drawPavementSplies():
+def drawDATFilePavementSplies():
     pass
 
 #########################################################
-# Convert Pavement Splines To Editable Polys
+# Draw DSF File Pavement Splines
 #########################################################
-def convertPavementSplinesToEditablePolys():
+def drawDSFFilePavementSplies():
+    pass
+
+#########################################################
+# Draw DSF File Buildings
+#########################################################
+def drawDSFFileBuildings():
+    pass
+
+#########################################################
+# Draw Signs
+#########################################################
+def drawSigns():
+    pass
+
+#########################################################
+# Convert DAT File Pavement Splines To Editable Polys
+#########################################################
+def convertDATFilePavementSplinesToEditablePolys():
     pass
 
 #########################################################
 # Convert Linear Feature Splines To Editable Polys
 #########################################################
 def convertLinearFeaturesSplinesToEditablePolys():
+    pass
+
+#########################################################
+# Convert DSF File Pavement Splines To Editable Polys
+#########################################################
+def convertDSFFilePavementSplinesToEditablePolys():
     pass
 
 #########################################################
@@ -133,14 +164,20 @@ def main():
     if drawRunwayDecals:
         drawRunwayDecals()
 
-    if drawPavementSplies:
-        drawPavementSplies()
+    if drawDATFilePavementSplies:
+        drawDATFilePavementSplies()
 
-    if convertPavementSplinesToEditablePolys:
-        convertPavementSplinesToEditablePolys()
+	if drawDSFFilePavementSplies:
+		drawDSFFilePavementSplies()
+
+    if convertDATFilePavementSplinesToEditablePolys:
+        convertDATFilePavementSplinesToEditablePolys()
 
     if convertLinearFeaturesSplinesToEditablePolys:
         convertLinearFeaturesSplinesToEditablePolys()
+
+	if convertDSFFilePavementSplinesToEditablePolys:
+	    convertDSFFilePavementSplinesToEditablePolys()
 
     if textureRunways:
         textureRunways()
@@ -160,33 +197,13 @@ def main():
     if booleanUnionPavements:
         booleanUnionPavements()
 
+	if drawSigns:
+		drawSigns()
+
 main()
 
 
 {% comment %}
-
-
-
-
-# ######################################
-# Draw Runways
-# ######################################
-
-{% for runway in Runways -%}
-# ######################################
-# Runway {{runway.Index | Plus:1 }}
-macros.run "Objects Shapes" "Rectangle"
-Rectangle length:{{runway.Length}} width:{{runway.Width}} cornerRadius:0 pos:[0,0,0] isSelected:on
-$.name = "Runway {{runway.Index | Plus:1 }}"
-select $Runway {{runway.Index | Plus:1 }}
-toolMode.coordsys #view
-rotate $ (angleaxis {{runway.Angle}} [0,0,1])
-
-$.pos.x = {{runway.X}}
-$.pos.y = {{runway.Y}}
-poly = convertToPoly($)
-
-{% endfor -%}
 
 
 # ######################################
@@ -194,39 +211,35 @@ poly = convertToPoly($)
 # ######################################
 
 {% for pavement in DATPavements -%}
-# ######################################
-# Pavement Pavement {{pavement.Index | Plus:1 }} {{pavement.Name}}
-{% for node in pavement.Nodes -%}
-{%- if node.Render -%}
-{%- if node.OpenLoop -%}
-sp = splineShape()
-sp.steps = 12
-addNewSpline sp
-{%- endif -%}
-{%- if node.IsBezier -%}
-addKnot sp 1 #bezier #curve [{{node.X}},{{node.Y}},0] [{{node.X}},{{node.Y}},0] [{{node.BezierControlX}},{{node.BezierControlY}},0]
-{%- else -%}
-addKnot sp 1 #corner #line [{{node.X}},{{node.Y}},0]
-{%- endif -%}
-{%- if node.CloseLoop -%}
-close sp 1
-updateShape sp
-select sp
-sp.name = "Pavement {{pavement.Index | Plus:1 }} {{pavement.Name}}"
-poly = convertToPoly(sp)
-{%- endif -%}
-{%- endif -%}
+	# ######################################
+	# Pavement Pavement {{pavement.Index | Plus:1 }} {{pavement.Name}}
+	{% for node in pavement.Nodes -%}
+		{%- if node.Render -%}
+
+			{%- if node.OpenLoop -%}
+				sp = splineShape()
+				sp.steps = 12
+				addNewSpline sp
+			{%- endif -%}
+
+			{%- if node.IsBezier -%}
+				addKnot sp 1 #bezier #curve [{{node.X}},{{node.Y}},0] [{{node.X}},{{node.Y}},0] [{{node.BezierControlX}},{{node.BezierControlY}},0]
+			{%- else -%}
+				addKnot sp 1 #corner #line [{{node.X}},{{node.Y}},0]
+			{%- endif -%}
+
+			{%- if node.CloseLoop -%}
+				close sp 1
+				updateShape sp
+				select sp
+				sp.name = "Pavement {{pavement.Index | Plus:1 }} {{pavement.Name}}"
+				poly = convertToPoly(sp)
+			{%- endif -%}
+		{%- endif -%}
+	{% endfor -%}
 {% endfor -%}
 
-{% endfor -%}
 
-# ######################################
-# Draw DSF File Pavements
-# ######################################
-
-# ######################################
-# Draw DSF File Buildings
-# ######################################
 
 # Quadify Runway
 #select $Runway1
