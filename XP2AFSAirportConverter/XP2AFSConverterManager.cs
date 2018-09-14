@@ -103,6 +103,11 @@ namespace XP2AFSAirportConverter
                         this.ImportAirportCsvList();
                         log.Info("Finished Import Airport CSV List action");
                         break;
+                    case ConverterAction.Clean:
+                        log.Info("Starting Clean action");
+                        this.Clean();
+                        log.Info("Finished Clean action");
+                        break;
 
                 }
             }
@@ -168,6 +173,32 @@ namespace XP2AFSAirportConverter
             airportCsvListImportProcessor.ImportAirportCsvList(csvFile);
         }
 
+        private void Clean()
+        {
+            var documentsFolderPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+
+            var afsXP2AFSConverterFolder = documentsFolderPath + @"\XP2AFSConverter\afs\";
+            var tempFolder = documentsFolderPath + @"\XP2AFSConverter\temp\";
+
+
+            System.IO.DirectoryInfo di = new DirectoryInfo(afsXP2AFSConverterFolder);
+
+            foreach (FileInfo file in di.GetFiles())
+            {
+                file.Delete();
+            }
+            foreach (DirectoryInfo dir in di.GetDirectories())
+            {
+                dir.Delete(true);
+            }
+
+            System.IO.DirectoryInfo diTemp = new DirectoryInfo(tempFolder);
+            foreach (FileInfo file in diTemp.GetFiles())
+            {
+                file.Delete();
+            }
+        }
+
         private void ParseArgs(string[] args)
         {
             if (args.Length > 0)
@@ -194,6 +225,9 @@ namespace XP2AFSAirportConverter
                         break;
                     case "importairportcsvlist":
                         this.actions.Add(ConverterAction.ImportAirportCsvList);
+                        break;
+                    case "clean":
+                        this.actions.Add(ConverterAction.Clean);
                         break;
                 }
 

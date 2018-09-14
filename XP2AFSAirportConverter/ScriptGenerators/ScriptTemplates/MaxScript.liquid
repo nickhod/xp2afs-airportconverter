@@ -56,6 +56,8 @@ def toBool(value):
     elif value == "false":
         return False
 
+
+
 #########################################################
 # Draw Runway
 #########################################################
@@ -224,7 +226,11 @@ def maxScript(script):
 def main():
 
     # Reset the max file
-    maxScript("resetMaxFile #noprompt")
+	MaxPlus.FileManager.Reset(True)
+
+	# Maximise the top viewport
+	MaxPlus.ViewportManager.SetActiveViewport(0)
+	MaxPlus.ViewportManager.SetViewportMax(True)
 
     #Set units to meters. 1 unit = 1 meter
     maxScript("units.DisplayType = #Metric")

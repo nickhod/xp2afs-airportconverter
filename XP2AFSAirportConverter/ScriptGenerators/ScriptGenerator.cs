@@ -13,7 +13,6 @@ namespace XP2AFSAirportConverter.ScriptGenerators
 {
     public abstract class ScriptGenerator
     {
-        protected ScriptModel scriptModel;
         protected DATFile datFile;
         protected DSFFile dsfFile;
         protected TSCFile tscFile;
@@ -24,7 +23,7 @@ namespace XP2AFSAirportConverter.ScriptGenerators
         /// <summary>
         /// 
         /// </summary>
-        protected void CalculateRunways()
+        protected void CalculateRunways(ScriptModel scriptModel)
         {
             int i = 0;
             foreach (var runway in this.datFile.LandRunways)
@@ -88,12 +87,12 @@ namespace XP2AFSAirportConverter.ScriptGenerators
                         break;
                 }
 
-                this.scriptModel.Runways.Add(scriptRunway);
+                scriptModel.Runways.Add(scriptRunway);
                 i++;
             }
         }
 
-        protected void CalculateDATFilePavements()
+        protected void CalculateDATFilePavements(ScriptModel scriptModel)
         {
             int i = 0;
             foreach (var pavement in this.datFile.Pavements)
@@ -216,7 +215,7 @@ namespace XP2AFSAirportConverter.ScriptGenerators
                 }
 
                 scriptPavement.Index = i;
-                this.scriptModel.DATPavements.Add(scriptPavement);
+                scriptModel.DATPavements.Add(scriptPavement);
                 i++;
             }
 

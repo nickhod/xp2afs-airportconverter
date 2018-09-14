@@ -12,11 +12,13 @@ namespace XP2AFSAirportConverter.Common
         DownloadAirports,
         AirportCsvList,
         ImportAirportCsvList,
+        Clean,
 
         // Convert steps
         GenerateRenderScripts,
         RunRenderScripts,
         BuildAirports,
-        UploadAirports
+        UploadAirports,
+
     }
 }

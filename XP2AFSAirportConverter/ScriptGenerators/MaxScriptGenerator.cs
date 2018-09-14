@@ -25,15 +25,15 @@ namespace XP2AFSAirportConverter.ScriptGenerators
             var maxScriptFilePath = AppDomain.CurrentDomain.BaseDirectory + "\\ScriptGenerators\\ScriptTemplates\\MaxScript.liquid";
             var maxScript = File.ReadAllText(maxScriptFilePath);
 
-            this.scriptModel = new ScriptModel();
-            this.CalculateRunways();
-            this.CalculateDATFilePavements();
+            var scriptModel = new ScriptModel();
+            this.CalculateRunways(scriptModel);
+            this.CalculateDATFilePavements(scriptModel);
 
-            this.scriptModel.AirportName = datFile.AirportHeader.Name;
-            this.scriptModel.AirportICAO = datFile.AirportHeader.ICAOCode;
-            this.scriptModel.GeneratedOn = DateTime.UtcNow;
-            this.scriptModel.SaveFilePath = outputFolder + @"\Input\" + icao + ".max";
-            this.scriptModel.SaveFilePath = this.scriptModel.SaveFilePath.Replace(@"\", @"\\");
+            scriptModel.AirportName = datFile.AirportHeader.Name;
+            scriptModel.AirportICAO = datFile.AirportHeader.ICAOCode;
+            scriptModel.GeneratedOn = DateTime.UtcNow;
+            scriptModel.SaveFilePath = outputFolder + @"\Input\" + icao + ".max";
+            scriptModel.SaveFilePath = scriptModel.SaveFilePath.Replace(@"\", @"\\");
 
             Template template = Template.Parse(maxScript);
             Template.NamingConvention = new CSharpNamingConvention();
