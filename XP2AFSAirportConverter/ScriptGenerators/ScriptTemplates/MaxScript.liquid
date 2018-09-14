@@ -57,6 +57,25 @@ def toBool(value):
         return False
 
 
+def createMaterial():
+	bitmapTex = MaxPlus.Factory.CreateDefaultBitmapTex()
+	bitmapTex.SetMapName(r"E:\\Games\\Aerofly Scenery Examples\\aerofly_fs_2_sdk_scenery_workshop_20170714\\aerofly_fs_2_sdk_scenery_workshop\\kigm_kingman\\asphalt_dark_color.tif")
+	bitmapTex.ReloadBitmapAndUpdate()
+	material = MaxPlus.Factory.CreateDefaultStdMat()
+	materialSubMaps = MaxPlus.ISubMap._CastFrom(material)
+	materialSubMaps.SetSubTexmap(1, bitmapTex)
+	material.SetEnableMap(1, True)
+	material.SetName(MaxPlus.WStr("Test Material"))
+    MaxPlus.MaterialManager.PutMtlToMtlEditor(material, 1)
+
+	#MaxPlus.Core.EvalMAXScript("tempMat = getMeditMaterial 1")
+	#MaxPlus.Core.EvalMAXScript("showTextureMap (getMeditMaterial 1) on")
+	#MaxPlus.Core.EvalMAXScript("enableHardwareMaterial tempMat on")
+	#MaxPlus.Core.EvalMAXScript("showHWTextureMap tempMat on")
+	MaxPlus.Core.EvalMAXScript("for mat in (getClassInstances standard processAllAnimatables:true) do showTextureMap mat on")
+
+	return material
+
 
 #########################################################
 # Draw Runway
