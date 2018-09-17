@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -18,7 +19,7 @@ namespace XP2AFSAirportConverter.ScriptGenerators
         protected TSCFile tscFile;
         protected string icao;
 
-        public abstract void GenerateScripts(string icao, DATFile datFile, DSFFile dsfFile, TSCFile tscFile, string outputFolder);
+        public abstract void GenerateScripts(string icao, DATFile datFile, DSFFile dsfFile, TSCFile tscFile, string outputFolder, string texturesFolder);
 
         /// <summary>
         /// 
@@ -220,6 +221,69 @@ namespace XP2AFSAirportConverter.ScriptGenerators
             }
 
 
+        }
+
+        protected void CalculateDSFFileBuildings(ScriptModel scriptModel)
+        {
+            int i = 0;
+            foreach (var polygon in this.dsfFile.Polygons)
+            {
+                // Don't bother with fences or hedges for the moment
+                if (!polygon.Reference.ToLower().Contains("fence") &&
+                    !polygon.Reference.ToLower().Contains("hedge"))
+                {
+                    if (polygon.WindingCollections != null)
+                    {
+                        foreach (var polygonWindingCollection in polygon.WindingCollections)
+                        {
+                            if (polygonWindingCollection.HeightMeters.HasValue)
+                            {
+                                foreach (var winding in polygonWindingCollection.Windings)
+                                {
+                                    ScriptBuilding scriptBuilding = new ScriptBuilding();
+                                    scriptBuilding.Height = polygonWindingCollection.HeightMeters.Value;
+                                    scriptBuilding.Index = i;
+                                    scriptBuilding.Nodes = new List<ScriptNode>();
+
+                                    var polyRefFileInfo = new FileInfo(polygon.Reference);
+                                    scriptBuilding.Name = polyRefFileInfo.Name.Replace(polyRefFileInfo.Extension, "");
+
+                                    for (int j = 0; j < winding.Points.Count; j++)
+                                    {
+                                        var node = winding.Points[j];
+                                        var scriptNode = new ScriptNode();
+
+                                        var nodeCoord = new GeoCoordinate(node.Latitude, node.Longitude);
+                                        var nodePosition = GeoCoordinateToPoint(tscFile.Location, nodeCoord);
+
+                                        scriptNode.X = nodePosition.X;
+                                        scriptNode.Y = nodePosition.Y;
+
+                                        scriptNode.Render = true;
+
+                                        if (j == 0)
+                                        {
+                                            scriptNode.OpenLoop = true;
+                                        }
+
+                                        if (j == winding.Points.Count - 1)
+                                        {
+                                            scriptNode.CloseLoop = true;
+                                        }
+
+                                        scriptBuilding.Nodes.Add(scriptNode);
+                                    }
+
+                                    scriptModel.Buildings.Add(scriptBuilding);
+                                    i++;
+                                }
+                            }
+                        }
+
+                    }
+                }
+
+            }
         }
 
         /// <summary>

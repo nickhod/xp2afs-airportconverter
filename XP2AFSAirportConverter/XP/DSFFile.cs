@@ -34,7 +34,7 @@ namespace XP2AFSAirportConverter.Models
 
     public class DSFPolygonWindingCollection
     {
-        public double HeightMeters { get; set; }
+        public double? HeightMeters { get; set; }
         public int Density { get; set; }
         public bool Chain { get; set; }
         public bool Ring { get; set; }

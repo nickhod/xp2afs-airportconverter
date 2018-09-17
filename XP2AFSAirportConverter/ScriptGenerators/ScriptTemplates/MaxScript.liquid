@@ -18,25 +18,34 @@ import pymxs
 
 # Control which actions are performed
 # This allows for manual editing between actions
-drawRunways = True
-drawRunwayDecals = True
-drawDATFilePavementSplines = True
-drawLinearFeaturesSplines = True
-drawDSFFilePavementSplines = True
-drawDSFFileBuildings = True
-drawSigns = True
-convertDATFilePavementSplinesToEditablePolys = True
-convertLinearFeaturesSplinesToEditablePolys = True
-convertDSFFilePavementSplinesToEditablePolys = True
-textureRunways = True
-textureRunwayDecals = True
-texturePavements = True
-textureLinearFeatures = True
-booleanUnionRunways = True
-booleanUnionPavements = True
-saveFile = True
+doDrawRunways = True
+doDrawRunwayDecals = True
+doDrawDATFilePavementSplines = False
+doDrawLinearFeaturesSplines = True
+doDrawDSFFilePavementSplines = True
+doDrawDSFFileBuildingSplines = True
+doDrawSigns = True
+doConvertDATFilePavementSplinesToEditablePolys = True
+doConvertLinearFeaturesSplinesToEditablePolys = True
+doConvertDSFFilePavementSplinesToEditablePolys = True
+doConvertDSFFileBuildingSplinesToEditablePolys = True
+doTextureRunways = True
+doTextureRunwayDecals = True
+doTexturePavements = True
+doTextureLinearFeatures = True
+doBooleanUnionRunways = True
+doBooleanUnionPavements = True
+doSaveFile = True
 
 saveFilePath = r"{{SaveFilePath}}"
+texturesPath = r"{{TexturesPath}}"
+materials = {}
+
+# Building Heights
+buildingHeights = []
+{% for building in Buildings -%}
+buildingHeights.append({{building.Height}})
+{% endfor -%}
 
 class SplineNode:
 
@@ -50,6 +59,22 @@ class SplineNode:
         self.closeLoop = closeLoop
         self.render = render
 
+        
+class CustomMaterial:
+
+    def __init__(self):
+        self.name = ""
+        self.materialEditorSlot = 0
+        self.ambientMap = ""
+        self.diffuseMap = ""
+        self.specularMap = ""
+        self.specualLevelMap = ""
+        self.opacityMap = ""
+        self.bumpMap = ""
+
+#########################################################
+# To Bool
+#########################################################
 def toBool(value):
     if value == "true":
         return True
@@ -57,43 +82,75 @@ def toBool(value):
         return False
 
 
-def createMaterial():
-	bitmapTex = MaxPlus.Factory.CreateDefaultBitmapTex()
-	bitmapTex.SetMapName(r"E:\\Games\\Aerofly Scenery Examples\\aerofly_fs_2_sdk_scenery_workshop_20170714\\aerofly_fs_2_sdk_scenery_workshop\\kigm_kingman\\asphalt_dark_color.tif")
-	bitmapTex.ReloadBitmapAndUpdate()
-	material = MaxPlus.Factory.CreateDefaultStdMat()
-	materialSubMaps = MaxPlus.ISubMap._CastFrom(material)
-	materialSubMaps.SetSubTexmap(1, bitmapTex)
-	material.SetEnableMap(1, True)
-	material.SetName(MaxPlus.WStr("Test Material"))
-    MaxPlus.MaterialManager.PutMtlToMtlEditor(material, 1)
+    
+#########################################################
+# Set Material Map
+#########################################################
+def setMaterialMap(material, materialSubMaps, mapId, bitmapPath):
+    bitmapTex = MaxPlus.Factory.CreateDefaultBitmapTex()
+    bitmapTex.SetMapName(bitmapPath)
+    bitmapTex.ReloadBitmapAndUpdate()
+    material.SetEnableMap(mapId, True)
+    materialSubMaps.SetSubTexmap(mapId, bitmapTex)
 
-	#MaxPlus.Core.EvalMAXScript("tempMat = getMeditMaterial 1")
-	#MaxPlus.Core.EvalMAXScript("showTextureMap (getMeditMaterial 1) on")
-	#MaxPlus.Core.EvalMAXScript("enableHardwareMaterial tempMat on")
-	#MaxPlus.Core.EvalMAXScript("showHWTextureMap tempMat on")
-	MaxPlus.Core.EvalMAXScript("for mat in (getClassInstances standard processAllAnimatables:true) do showTextureMap mat on")
 
-	return material
+#########################################################
+# Create Material
+#########################################################
+def createMaterial(customMaterial):
+    #bitmapTex = MaxPlus.Factory.CreateDefaultBitmapTex()
+    #bitmapTex.SetMapName(r"E:\\Games\\Aerofly Scenery Examples\\aerofly_fs_2_sdk_scenery_workshop_20170714\\aerofly_fs_2_sdk_scenery_workshop\\kigm_kingman\\asphalt_dark_color.tif")
+    #bitmapTex.ReloadBitmapAndUpdate()
 
+
+    material = MaxPlus.Factory.CreateDefaultStdMat()
+    materialSubMaps = MaxPlus.ISubMap._CastFrom(material)
+    
+    # Ambient Map
+    if customMaterial.ambientMap != "":
+        setMaterialMap(material, materialSubMaps, 0, texturesPath + customMaterial.ambientMap)
+
+    # Diffuse Map
+    if customMaterial.diffuseMap != "":
+        setMaterialMap(material, materialSubMaps, 1, texturesPath + customMaterial.diffuseMap)
+
+    # Specular Map
+    if customMaterial.specularMap != "":
+        setMaterialMap(material, materialSubMaps, 2, texturesPath + customMaterial.specularMap)
+
+    # Specular Level Map
+    if customMaterial.specualLevelMap != "":
+        setMaterialMap(material, materialSubMaps, 3, texturesPath + customMaterial.specualLevelMap)
+
+    material.SetName(MaxPlus.WStr(customMaterial.name))
+    MaxPlus.MaterialManager.PutMtlToMtlEditor(material, customMaterial.materialEditorSlot)
+    
+    #MaxPlus.Core.EvalMAXScript("tempMat = getMeditMaterial 1")
+    #MaxPlus.Core.EvalMAXScript("showTextureMap (getMeditMaterial 1) on")
+    #MaxPlus.Core.EvalMAXScript("enableHardwareMaterial tempMat on")
+    #MaxPlus.Core.EvalMAXScript("showHWTextureMap tempMat on")
+    MaxPlus.Core.EvalMAXScript("for mat in (getClassInstances standard processAllAnimatables:true) do showTextureMap mat on")
+
+    return material
+    
 
 #########################################################
 # Draw Runway
 #########################################################
 def drawRunway(x, y, length, width, angle, name):
-	obj = MaxPlus.Factory.CreateObject(MaxPlus.SuperClassIds.Shape, MaxPlus.ClassIds.Rectangle)
-	obj.ParameterBlock.Length.Value = length
-	obj.ParameterBlock.Width.Value = width
-	node = MaxPlus.Factory.CreateNode(obj)
-	node.Name = name
-	maxScript("rotate $'{0}' (angleaxis {1} [0,0,1])".format(name, angle))
-	node.Position = MaxPlus.Point3(x, y, 0)
-	node.Convert(MaxPlus.ClassIds.PolyMeshObject)
+    obj = MaxPlus.Factory.CreateObject(MaxPlus.SuperClassIds.Shape, MaxPlus.ClassIds.Rectangle)
+    obj.ParameterBlock.Length.Value = length
+    obj.ParameterBlock.Width.Value = width
+    node = MaxPlus.Factory.CreateNode(obj)
+    node.Name = name
+    maxScript("rotate $'{0}' (angleaxis {1} [0,0,1])".format(name, angle))
+    node.Position = MaxPlus.Point3(x, y, 0)
+    node.Convert(MaxPlus.ClassIds.PolyMeshObject)
 
 #########################################################
 # Draw Spline
 #########################################################
-def drawSpline(splineNodeArray, name, index):
+def drawSpline(splineNodeArray, namePrefix, name, index):
     for node in splineNodeArray:
         if node.render:
             if node.openLoop:
@@ -110,7 +167,7 @@ def drawSpline(splineNodeArray, name, index):
                 maxScript("close sp 1")
                 maxScript("updateShape sp")
                 maxScript("select sp")
-                maxScript("sp.name = \"Pavement {0} {1}\"".format(index+1, name))
+                maxScript("sp.name = \"{0} {1} {2}\"".format(namePrefix, index+1, name))
                 #maxScript("poly = convertToPoly(sp)")
 
 
@@ -139,7 +196,7 @@ def drawSingleRunwayDecals(name):
 #########################################################
 # Draw DAT File Pavement Splines
 #########################################################
-def drawDATFilePavementSplies():
+def drawDATFilePavementSplines():
 
     {% for pavement in DATPavements -%}
     # Pavement Pavement {{pavement.Index | Plus:1 }} {{pavement.Name}}
@@ -149,20 +206,30 @@ def drawDATFilePavementSplies():
     {% for node in pavement.Nodes -%}
     splineNodeArray.append(SplineNode({{node.X}},{{node.Y}},toBool("{{node.IsBezier}}"),{{node.BezierControlX}},{{node.BezierControlY}},toBool("{{node.OpenLoop}}"),toBool("{{node.CloseLoop}}"),toBool("{{node.Render}}")))
     {% endfor -%}
-    drawSpline(splineNodeArray, pavementName, pavementIndex)
+    drawSpline(splineNodeArray, "Pavement", pavementName, pavementIndex)
     {% endfor -%}
 
 #########################################################
 # Draw DSF File Pavement Splines
 #########################################################
-def drawDSFFilePavementSplies():
+def drawDSFFilePavementSplines():
     pass
 
 #########################################################
-# Draw DSF File Buildings
+# Draw DSF File Building Splines
 #########################################################
-def drawDSFFileBuildings():
-    pass
+def drawDSFFileBuildingSplines():
+
+    {% for building in Buildings -%}
+    # Building{{building.Index | Plus:1 }} {{building.Name}}
+        splineNodeArray = []
+        buildingName = "{{building.Name}}"
+        buildingIndex = {{building.Index}}
+    {% for node in building.Nodes -%}
+    splineNodeArray.append(SplineNode({{node.X}},{{node.Y}},toBool("{{node.IsBezier}}"),{{node.BezierControlX}},{{node.BezierControlY}},toBool("{{node.OpenLoop}}"),toBool("{{node.CloseLoop}}"),toBool("{{node.Render}}")))
+    {% endfor -%}
+    drawSpline(splineNodeArray, "Building", buildingName, buildingIndex)
+    {% endfor -%}
 
 #########################################################
 # Draw Signs
@@ -189,6 +256,22 @@ def convertDSFFilePavementSplinesToEditablePolys():
     pass
 
 #########################################################
+# Convert DSF File Building Splines To Editable Polys
+#########################################################
+def convertDSFFileBuildingSplinesToEditablePolys():
+
+    {% for building in Buildings -%}
+# Building{{building.Index | Plus:1 }} {{building.Name}}
+    nodeName = "Building {{building.Index | Plus:1 }} {{building.Name}}"
+    node = MaxPlus.INode.GetINodeByName(nodeName)
+    node.Convert(MaxPlus.ClassIds.PolyMeshObject)
+    shellModifier = MaxPlus.Factory.CreateObjectModifier(MaxPlus.ClassIds.Shell)
+    shellModifier.ParameterBlock.OuterAmount.Value = buildingHeights[{{building.Index}}]
+    node.AddModifier(shellModifier)
+    {% endfor -%}
+
+
+#########################################################
 # Texture Runways
 #########################################################
 def textureRunways():
@@ -200,6 +283,10 @@ def textureRunways():
 # Texture Runway
 #########################################################
 def textureRunway(name, length, width, surfaceType, shoulderType):
+    node = MaxPlus.INode.GetINodeByName(name)
+    node.Material = materials["runwayDark"]
+    unwrapUVWModifier = MaxPlus.Factory.CreateObjectModifier(MaxPlus.ClassIds.Unwrap_UVW)
+    node.AddModifier(unwrapUVWModifier)
     pass
 
 #########################################################
@@ -245,61 +332,96 @@ def maxScript(script):
 def main():
 
     # Reset the max file
-	MaxPlus.FileManager.Reset(True)
+    MaxPlus.FileManager.Reset(True)
 
-	# Maximise the top viewport
-	MaxPlus.ViewportManager.SetActiveViewport(0)
-	MaxPlus.ViewportManager.SetViewportMax(True)
-
+    # Maximise the top viewport
+    MaxPlus.ViewportManager.SetActiveViewport(0)
+    MaxPlus.ViewportManager.SetViewportMax(True)
+    
     #Set units to meters. 1 unit = 1 meter
     maxScript("units.DisplayType = #Metric")
     maxScript("units.MetricType = #meters")
     maxScript("units.SystemType = #meters")
     maxScript("units.SystemScale = 1")
 
-    if drawRunways:
+    # Setup materials
+
+    # White decals
+    whiteDecalsCustomMaterial = CustomMaterial()
+    whiteDecalsCustomMaterial.name = "White Decals"
+    whiteDecalsCustomMaterial.materialEditorSlot = 0
+    whiteDecalsCustomMaterial.diffuseMap = "runway_decal_01_color.tif"
+    whiteDecalsMaterial = createMaterial(whiteDecalsCustomMaterial)
+
+    # Mixed decals
+    mixedDecalsCustomMaterial = CustomMaterial()
+    mixedDecalsCustomMaterial.name = "Mixed Decals"
+    mixedDecalsCustomMaterial.materialEditorSlot = 1
+    mixedDecalsCustomMaterial.diffuseMap = "runway_decal_00_color.tif"
+    mixedDecalsMaterial = createMaterial(mixedDecalsCustomMaterial)
+
+    # Runway Dark
+    runwayDarkCustomMaterial = CustomMaterial()
+    runwayDarkCustomMaterial .name = "Mixed Decals"
+    runwayDarkCustomMaterial .materialEditorSlot = 2
+    runwayDarkCustomMaterial .diffuseMap = "runway_dark_color.tif"
+    runwayDarkCustomMaterial .specularMap = "runway_dark_specular.tif"
+    runwayDarkCustomMaterial .specularLevelMap = "runway_dark_specular_alpha.tif"
+    runwayDarkMaterial = createMaterial(runwayDarkCustomMaterial)
+
+    materials["whiteDecials"] = whiteDecalsMaterial
+    materials["mixedDecals"] = mixedDecalsMaterial
+    materials["runwayDark"] = runwayDarkMaterial
+
+    if doDrawRunways:
         drawRunways()
 
-    if drawRunwayDecals:
+    if doDrawRunwayDecals:
         drawRunwayDecals()
 
-    if drawDATFilePavementSplies:
-        drawDATFilePavementSplies()
+    if doDrawDATFilePavementSplines:
+        drawDATFilePavementSplines()
 
-	if drawDSFFilePavementSplies:
-		drawDSFFilePavementSplies()
+    if doDrawDSFFilePavementSplines:
+        drawDSFFilePavementSplines()
 
-    if convertDATFilePavementSplinesToEditablePolys:
+    if doDrawDSFFileBuildingSplines:
+        drawDSFFileBuildingSplines()
+
+    if doConvertDATFilePavementSplinesToEditablePolys:
         convertDATFilePavementSplinesToEditablePolys()
 
-    if convertLinearFeaturesSplinesToEditablePolys:
+    if doConvertLinearFeaturesSplinesToEditablePolys:
         convertLinearFeaturesSplinesToEditablePolys()
 
-	if convertDSFFilePavementSplinesToEditablePolys:
-	    convertDSFFilePavementSplinesToEditablePolys()
+    if doConvertDSFFilePavementSplinesToEditablePolys:
+        convertDSFFilePavementSplinesToEditablePolys()
 
-    if textureRunways:
+    if doConvertDSFFileBuildingSplinesToEditablePolys:
+        convertDSFFileBuildingSplinesToEditablePolys()
+
+    if doTextureRunways:
         textureRunways()
 
-    if textureRunwayDecals:
+    if doTextureRunwayDecals:
         textureRunwayDecals()
 
-    if texturePavements:
+    if doTexturePavements:
         texturePavements()
 
-    if textureLinearFeatures:
+    if doTextureLinearFeatures:
         textureLinearFeatures()
 
-    if booleanUnionRunways:
+    if doBooleanUnionRunways:
         booleanUnionRunways()
 
-    if booleanUnionPavements:
+    if doBooleanUnionPavements:
         booleanUnionPavements()
 
-	if drawSigns:
-		drawSigns()
+    if doDrawSigns:
+        drawSigns()
 
-    if saveFile:
+    if doSaveFile:
         maxScript("saveMaxFile \"{0}\" saveAsVersion:2016".format(saveFilePath))
 
 main()

@@ -15,7 +15,7 @@ namespace XP2AFSAirportConverter.ScriptGenerators
 {
     public class MaxScriptGenerator : ScriptGenerator
     {
-        public override void GenerateScripts(string icao, DATFile datFile, DSFFile dsfFile, TSCFile tscFile, string outputFolder)
+        public override void GenerateScripts(string icao, DATFile datFile, DSFFile dsfFile, TSCFile tscFile, string outputFolder, string texturesFolder)
         {
             this.icao = icao;
             this.datFile = datFile;
@@ -28,12 +28,13 @@ namespace XP2AFSAirportConverter.ScriptGenerators
             var scriptModel = new ScriptModel();
             this.CalculateRunways(scriptModel);
             this.CalculateDATFilePavements(scriptModel);
+            this.CalculateDSFFileBuildings(scriptModel);
 
             scriptModel.AirportName = datFile.AirportHeader.Name;
             scriptModel.AirportICAO = datFile.AirportHeader.ICAOCode;
             scriptModel.GeneratedOn = DateTime.UtcNow;
-            scriptModel.SaveFilePath = outputFolder + @"\Input\" + icao + ".max";
-            scriptModel.SaveFilePath = scriptModel.SaveFilePath.Replace(@"\", @"\\");
+            scriptModel.SaveFilePath = (outputFolder + @"\Input\" + icao + ".max").Replace(@"\", @"\\"); ;
+            scriptModel.TexturesPath = (texturesFolder + @"\").Replace(@"\", @"\\");
 
             Template template = Template.Parse(maxScript);
             Template.NamingConvention = new CSharpNamingConvention();

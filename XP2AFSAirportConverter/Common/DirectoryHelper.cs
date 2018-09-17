@@ -31,6 +31,13 @@ namespace XP2AFSAirportConverter.Common
             return airportFullDirectory;
         }
 
+        public static string GetTexturesDirectory(Settings settings)
+        {
+            var texturesDirectory = settings.XP2AFSConverterFolder + "textures";
+            return texturesDirectory;
+        }
+
+
         public static bool CheckIfXPAirportIsDownloaded(string icaoCode, Settings settings)
         {
             var airportFullDirectory = DirectoryHelper.GetAirportXPFullDirectory(icaoCode, settings);

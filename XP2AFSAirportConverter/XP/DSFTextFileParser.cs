@@ -29,13 +29,21 @@ namespace XP2AFSAirportConverter.XP
 
             this.dsfFile = new DSFFile();
 
-            foreach (var line in data.Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries))
+            // We need to read Object and Polygon Defs first
+            int i = 0;
+
+            var newlineSeparator = "\n";
+
+            foreach (var line in data.Split(new string[] { newlineSeparator }, StringSplitOptions.RemoveEmptyEntries))
             {
-                string[] elements = line.Split(' ');
+                // This might having Windows line endings
+                var cleanLine = line.Replace("\r", "");
+                //log.Debug("Line " + (i + 1));
+                string[] elements = cleanLine.Split(' ');
 
                 if (elements.Length > 0)
                 {
-                    switch(elements[0])
+                    switch (elements[0])
                     {
                         case "OBJECT_DEF":
                             this.ParseObjectDef(elements);
@@ -43,6 +51,24 @@ namespace XP2AFSAirportConverter.XP
                         case "POLYGON_DEF":
                             this.ParsePolygonDef(elements);
                             break;
+                    }
+                }
+                i++;
+            }
+
+
+
+            int j = 0;
+            foreach (var line in data.Split(new string[] { newlineSeparator }, StringSplitOptions.RemoveEmptyEntries))
+            {
+                var cleanLine = line.Replace("\r", "");
+                //log.Debug("Line " + (j + 1));
+                string[] elements = cleanLine.Split(' ');
+
+                if (elements.Length > 0)
+                {
+                    switch(elements[0])
+                    {
                         case "OBJECT":
                             this.ParseObjectLocation(elements);
                             break;
@@ -63,6 +89,7 @@ namespace XP2AFSAirportConverter.XP
                             break;
                     }
                 }
+                j++;
             }
 
             return this.dsfFile;
@@ -129,7 +156,7 @@ namespace XP2AFSAirportConverter.XP
 
             poly.Reference = elements[1];
 
-            var fileExtension = Path.GetExtension(poly.Reference);
+            var fileExtension = Path.GetExtension(poly.Reference).Replace(".", "");
 
             switch(fileExtension)
             {

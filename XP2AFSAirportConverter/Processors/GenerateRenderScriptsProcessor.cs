@@ -35,6 +35,7 @@ namespace XP2AFSAirportConverter.Processors
                 log.InfoFormat("Converting airport {0} of {1}", i + 1, icaoCodes.Count());
 
                 this.ConvertAirport(icaoCode);
+                i++;
             }
         }
 
@@ -92,7 +93,8 @@ namespace XP2AFSAirportConverter.Processors
                 File.WriteAllText(tmcFilename, tmcFileString);
 
                 var maxScriptGenerator = new MaxScriptGenerator();
-                maxScriptGenerator.GenerateScripts(icaoCode, datFile, dsfFile, tscFile, airportAFSFullDirectory);
+                maxScriptGenerator.GenerateScripts(icaoCode, datFile, dsfFile, tscFile, airportAFSFullDirectory, 
+                    DirectoryHelper.GetTexturesDirectory(XP2AFSConverterManager.Settings));
 
                 log.Info("Airport conversion done");
             }

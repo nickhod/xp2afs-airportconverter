@@ -55,14 +55,17 @@ namespace XP2AFSAirportConverter.ScriptGenerators.Models
             this.Runways = new List<ScriptRunway>();
             this.DATPavements = new List<ScriptPavement>();
             this.DSFPavements = new List<ScriptPavement>();
+            this.Buildings = new List<ScriptBuilding>();
         }
 
         public IList<ScriptPavement> DATPavements { get; set; }
         public IList<ScriptPavement> DSFPavements { get; set; }
         public IList<ScriptRunway> Runways { get; set; }
+        public IList<ScriptBuilding> Buildings { get; set; }
         public string AirportName { get; set; }
         public string AirportICAO { get; set; }
         public DateTime GeneratedOn { get; set; }
         public string SaveFilePath { get; set; }
+        public string TexturesPath { get; set; }
     }
 }
