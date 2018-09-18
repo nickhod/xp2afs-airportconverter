@@ -37,6 +37,11 @@ namespace XP2AFSAirportConverter.Common
             return texturesDirectory;
         }
 
+        public static string GetAssetMapsDirectory(Settings settings)
+        {
+            var assetMapsDirectory = settings.XP2AFSConverterFolder + "assetmaps";
+            return assetMapsDirectory;
+        }
 
         public static bool CheckIfXPAirportIsDownloaded(string icaoCode, Settings settings)
         {

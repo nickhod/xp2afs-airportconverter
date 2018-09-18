@@ -108,6 +108,11 @@ namespace XP2AFSAirportConverter
                         this.Clean();
                         log.Info("Finished Clean action");
                         break;
+                    case ConverterAction.GenerateAssetList:
+                        log.Info("Starting Generate Asset List action");
+                        this.GenereateAssetList();
+                        log.Info("Finished Generate Asset List action");
+                        break;
 
                 }
             }
@@ -116,6 +121,20 @@ namespace XP2AFSAirportConverter
 
         }
 
+        private void GenereateAssetList()
+        {
+            log.Info("Generating Asset List");
+
+            AirportListProcessor airportListProcessor = new AirportListProcessor();
+            AirportCsvListProcessor csvListProcessor = new AirportCsvListProcessor();
+
+            var airportsFile = Settings.XP2AFSConverterFolder + @"xp_airports.xml";
+            var airportList = airportListProcessor.DeserializeAirportListFile(airportsFile);
+
+
+            var assetListProcessor = new AssetListProcessor();
+            assetListProcessor.GenerateAssetList(airportList);
+        }
 
         private void DownloadAirports(List<string> icaoCodes)
         {
@@ -228,6 +247,9 @@ namespace XP2AFSAirportConverter
                         break;
                     case "clean":
                         this.actions.Add(ConverterAction.Clean);
+                        break;
+                    case "generateassetlist":
+                        this.actions.Add(ConverterAction.GenerateAssetList);
                         break;
                 }
 

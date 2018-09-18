@@ -19,7 +19,7 @@ namespace XP2AFSAirportConverter.XP
         {
             // Fun and games, the DSF file is in the hierarchy
             // ICAO.zip
-            //   KORD.txt (this file might be presnet, but may not be)
+            //   KORD.txt (this file might be present, but may not be)
             //   ICAO_Scenery_Pack.zip
             //     ICAO_Scenery_Pack (dir)
             //       Earth nav data
@@ -88,25 +88,19 @@ namespace XP2AFSAirportConverter.XP
                                                     byte[] buffer = new byte[4096];
                                                     StreamUtils.Copy(dsfFileStream, dsfFileMemoryStream, buffer);
                                                     dsfFileData = dsfFileMemoryStream.ToArray();
-                                                }
 
+                                                    var dsf2TextManager = new DSF2TextManager();
+                                                    dsfAsText = dsf2TextManager.GetTextDSFFile(dsfFileData, XP2AFSConverterManager.Settings);
+                                                }
                                             }
                                         }
-
-
                                     }
                                 }
                             }
                         }
-
-                        var dsf2TextManager = new DSF2TextManager();
-                        dsfAsText = dsf2TextManager.GetTextDSFFile(dsfFileData, XP2AFSConverterManager.Settings);
-
                     }
-
                 }
             }
-
 
 
             var dsfTextFileParser = new DSFTextFileParser();

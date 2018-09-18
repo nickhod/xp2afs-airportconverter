@@ -51,6 +51,10 @@ namespace XP2AFSAirportConverter
                 Console.WriteLine("-- Generate a csv list of all relevant airports");
                 Console.WriteLine("XP2AFSAirportConverter airportcsvlist");
                 Console.WriteLine("XP2AFSAirportConverter importairportcsvlist");
+                Console.WriteLine("");
+                Console.WriteLine("-- Generate a mapping file and count list for asset files");
+                Console.WriteLine("XP2AFSAirportConverter generateassetlist");
+                Console.WriteLine("");
                 Console.WriteLine("-- Clean all generated files (use with caution)");
                 Console.WriteLine("XP2AFSAirportConverter clean");
             }

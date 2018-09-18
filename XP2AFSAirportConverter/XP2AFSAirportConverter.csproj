@@ -111,9 +111,11 @@
     <Compile Include="Data\Models\Country.cs" />
     <Compile Include="Data\Models\Region.cs" />
     <Compile Include="Models\AirportCsvListItem.cs" />
+    <Compile Include="Models\AssetListItem.cs" />
     <Compile Include="Processors\AirportCsvListImportProcessor.cs" />
     <Compile Include="Processors\AirportCsvListProcessor.cs" />
     <Compile Include="Processors\AirportListProcessor.cs" />
+    <Compile Include="Processors\AssetListProcessor.cs" />
     <Compile Include="Processors\BuildAirportsProcessor.cs" />
     <Compile Include="Processors\DownloadAirportsProcessor.cs" />
     <Compile Include="Processors\GenerateRenderScriptsProcessor.cs" />
