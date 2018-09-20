@@ -790,6 +790,8 @@ http://developer.x-plane.com/wp-content/uploads/2015/11/XP-APT1000-Spec.pdf
                 node.End = true;
             }
 
+            node.RowCode = nodeRowCode;
+
             this.temporaryNodeCollection.Add(node);
         }
 
@@ -858,7 +860,7 @@ http://developer.x-plane.com/wp-content/uploads/2015/11/XP-APT1000-Spec.pdf
                         }
 
                         ((List<Node>)this.datFile.AirportBoundary.Nodes).AddRange(this.temporaryNodeCollection);
-                        this.NodeCollectionSecondPass(this.datFile.AirportBoundary.Nodes);
+                        this.datFile.AirportBoundary.Nodes = this.NodeCollectionSecondPass(this.datFile.AirportBoundary.Nodes);
 
                         break;
                     case RowCode.Pavement:
@@ -874,7 +876,7 @@ http://developer.x-plane.com/wp-content/uploads/2015/11/XP-APT1000-Spec.pdf
                             }
 
                             ((List<Node>)pavement.Nodes).AddRange(this.temporaryNodeCollection);
-                            this.NodeCollectionSecondPass(pavement.Nodes);
+                            pavement.Nodes = this.NodeCollectionSecondPass(pavement.Nodes);
                         }
                         else
                         {
@@ -892,15 +894,96 @@ http://developer.x-plane.com/wp-content/uploads/2015/11/XP-APT1000-Spec.pdf
             this.temporaryNodeCollection.Clear();
         }
 
-        private void NodeCollectionSecondPass(IList<Node> nodes)
+        private List<Node> NodeCollectionSecondPass(IList<Node> nodes)
         {
-            Node lastNode = null;
-
+            List<Node> finalNodeList = new List<Node>();
+            int i = 0;
             foreach (Node node in nodes)
             {
+                bool addNode = true;
 
-                lastNode = node;
+                // If this node is a bezier and the next node has the same point and isn't a bezier, this is a split bezier
+                // Is this a bezier
+                if (node.BezierControlPoint1Latitude.HasValue)
+                {
+                    // Can we look ahead
+                    if (i < nodes.Count() - 1)
+                    {
+                        // Is the node ahead the same point?
+                        if (node.Latitude == nodes[i + 1].Latitude &&
+                            node.Longitude == nodes[i + 1].Longitude)
+                        {
+                            node.SplitBezier = true;
+                        }
+                    }
+                }
+
+                // If the previous node was a split bezier and this isn't a bezier, don't add it
+                if (!node.BezierControlPoint1Latitude.HasValue)
+                {
+                    if (i > 0)
+                    {
+                        if (nodes[i-1].BezierControlPoint1Latitude.HasValue && nodes[i-1].SplitBezier)
+                        {
+                            addNode = false;
+                        }
+                    }
+                }
+
+                // If the node is a bezier, but isn't a split bezier, mirror a control point, otherwise the second control point
+                // is the node position
+                if (node.BezierControlPoint1Latitude.HasValue)
+                {
+                    if (!node.SplitBezier)
+                    {
+                        var nodeToControlPoint1DistanceLat = node.BezierControlPoint1Latitude - node.Latitude;
+                        var nodeToControlPoint1DistanceLon = node.BezierControlPoint1Longitude - node.Longitude;
+
+                        var nodeToControlPoint2DistanceLat = nodeToControlPoint1DistanceLat * -1;
+                        var nodeToControlPoint2DistanceLon = nodeToControlPoint1DistanceLon * -1;
+
+                        node.BezierControlPoint2Latitude = node.Latitude + nodeToControlPoint2DistanceLat;
+                        node.BezierControlPoint2Longitude = node.Longitude + nodeToControlPoint2DistanceLon;
+                    }
+                    else
+                    {
+                        node.BezierControlPoint2Latitude = node.Latitude;
+                        node.BezierControlPoint2Longitude = node.Longitude;
+                    }
+                }
+
+                // If this node is not a bezier we need to figure out if it is a curve
+                if (!node.BezierControlPoint1Latitude.HasValue)
+                {
+                    // Look at the previous node. If it's a non-split bezier, this is a cruve
+                    if (i > 0)
+                    {
+                        if (nodes[i - 1].BezierControlPoint1Latitude.HasValue && !nodes[i - 1].SplitBezier)
+                        {
+                            node.IsCurve = true;
+                        }
+                    }
+
+                    // Look at the next node. If it's a non-split bezier, this is a curve
+                    if (i < nodes.Count() - 1)
+                    {
+                        // Is the node ahead the same point?
+                        if (nodes[i + 1].BezierControlPoint1Latitude.HasValue && !nodes[i + 1].SplitBezier)
+                        {
+                            node.IsCurve = true;
+                        }
+                    }
+                }
+
+                if (addNode)
+                {
+                    finalNodeList.Add(node);
+                }
+
+                i++;
             }
+
+            return finalNodeList;
         }
 
         private Boolean IsNumber(String s)

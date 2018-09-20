@@ -39,12 +39,16 @@ namespace XP2AFSAirportConverter.ScriptGenerators.Models
         public double X { get; set; }
         public double Y { get; set; }
 
-        public double BezierControlX { get; set; }
-        public double BezierControlY { get; set; }
+        public double BezierControl1X { get; set; }
+        public double BezierControl1Y { get; set; }
+        public double BezierControl2X { get; set; }
+        public double BezierControl2Y { get; set; }
         public bool End { get; set; }
         public bool CloseLoop { get; set; }
         public bool OpenLoop { get; set; }
         public bool IsBezier { get; set; }
+        public bool IsBezierCorner { get; set; }
+        public bool IsCurve { get; set; }
         public bool Render { get; set; }
     }
 

@@ -16,11 +16,19 @@
 import MaxPlus
 import pymxs
 
-# Control which actions are performed
+# High level control of what to render
+processRunways = True
+processRunwayDecals = True
+processPavements = True
+processBuildings = False
+processLinearFeatures = True
+
+
+# Fine grained control of which actions are performed
 # This allows for manual editing between actions
 doDrawRunways = True
 doDrawRunwayDecals = True
-doDrawDATFilePavementSplines = False
+doDrawDATFilePavementSplines = True
 doDrawLinearFeaturesSplines = True
 doDrawDSFFilePavementSplines = True
 doDrawDSFFileBuildingSplines = True
@@ -49,17 +57,21 @@ buildingHeights.append({{building.Height}})
 
 class SplineNode:
 
-    def __init__(self, x, y, isBezier, bezierControlX, bezierControlY, openLoop, closeLoop, render):
+    def __init__(self, x, y, isBezier, isBezierCorner, isCurve, bezierControl1X, bezierControl1Y, bezierControl2X, bezierControl2Y, openLoop, closeLoop, render):
         self.x = x
         self.y = y
         self.isBezier = isBezier
-        self.bezierControlX = bezierControlX
-        self.bezierControlY = bezierControlY
+        self.isBezierCorner = isBezierCorner
+        self.isCurve = isCurve
+        self.bezierControl1X = bezierControl1X
+        self.bezierControl1Y = bezierControl1Y
+        self.bezierControl2X = bezierControl2X
+        self.bezierControl2Y = bezierControl2Y
         self.openLoop = openLoop
         self.closeLoop = closeLoop
         self.render = render
 
-        
+
 class CustomMaterial:
 
     def __init__(self):
@@ -82,7 +94,7 @@ def toBool(value):
         return False
 
 
-    
+
 #########################################################
 # Set Material Map
 #########################################################
@@ -105,7 +117,7 @@ def createMaterial(customMaterial):
 
     material = MaxPlus.Factory.CreateDefaultStdMat()
     materialSubMaps = MaxPlus.ISubMap._CastFrom(material)
-    
+
     # Ambient Map
     if customMaterial.ambientMap != "":
         setMaterialMap(material, materialSubMaps, 0, texturesPath + customMaterial.ambientMap)
@@ -124,7 +136,7 @@ def createMaterial(customMaterial):
 
     material.SetName(MaxPlus.WStr(customMaterial.name))
     MaxPlus.MaterialManager.PutMtlToMtlEditor(material, customMaterial.materialEditorSlot)
-    
+
     #MaxPlus.Core.EvalMAXScript("tempMat = getMeditMaterial 1")
     #MaxPlus.Core.EvalMAXScript("showTextureMap (getMeditMaterial 1) on")
     #MaxPlus.Core.EvalMAXScript("enableHardwareMaterial tempMat on")
@@ -132,7 +144,7 @@ def createMaterial(customMaterial):
     MaxPlus.Core.EvalMAXScript("for mat in (getClassInstances standard processAllAnimatables:true) do showTextureMap mat on")
 
     return material
-    
+
 
 #########################################################
 # Draw Runway
@@ -159,9 +171,15 @@ def drawSpline(splineNodeArray, namePrefix, name, index):
                 maxScript("addNewSpline sp")
 
             if node.isBezier:
-                maxScript("addKnot sp 1 #bezier #curve [{0}, {1}, 0] [{2}, {3}, 0] [{4}, {5}, 0]".format(node.x, node.y, node.x, node.y, node.bezierControlX, node.bezierControlY))
+                if node.isBezierCorner:
+                    maxScript("addKnot sp 1 #bezierCorner #curve [{0}, {1}, 0] [{2}, {3}, 0] [{4}, {5}, 0]".format(node.x, node.y, node.bezierControl1X, node.bezierControl1Y, node.bezierControl2X, node.bezierControl2Y))
+                else:
+                    maxScript("addKnot sp 1 #bezier #curve [{0}, {1}, 0] [{2}, {3}, 0] [{4}, {5}, 0]".format(node.x, node.y, node.bezierControl1X, node.bezierControl1Y, node.bezierControl2X, node.bezierControl2Y))
             else:
-                maxScript("addKnot sp 1 #corner #line [{0}, {1}, 0]".format(node.x, node.y))
+                if node.isCurve:
+                    maxScript("addKnot sp 1 #corner #curve [{0}, {1}, 0]".format(node.x, node.y))
+                else:
+                    maxScript("addKnot sp 1 #corner #line [{0}, {1}, 0]".format(node.x, node.y))
 
             if node.closeLoop:
                 maxScript("close sp 1")
@@ -204,7 +222,7 @@ def drawDATFilePavementSplines():
         pavementName = "{{pavement.Name}}"
         pavementIndex = {{pavement.Index}}
     {% for node in pavement.Nodes -%}
-    splineNodeArray.append(SplineNode({{node.X}},{{node.Y}},toBool("{{node.IsBezier}}"),{{node.BezierControlX}},{{node.BezierControlY}},toBool("{{node.OpenLoop}}"),toBool("{{node.CloseLoop}}"),toBool("{{node.Render}}")))
+    splineNodeArray.append(SplineNode({{node.X}},{{node.Y}},toBool("{{node.IsBezier}}"),toBool("{{node.IsBezierCorner}}"),toBool("{{node.IsCurve}}"),{{node.BezierControl1X}},{{node.BezierControl1Y}},{{node.BezierControl2X}},{{node.BezierControl2Y}},toBool("{{node.OpenLoop}}"),toBool("{{node.CloseLoop}}"),toBool("{{node.Render}}")))
     {% endfor -%}
     drawSpline(splineNodeArray, "Pavement", pavementName, pavementIndex)
     {% endfor -%}
@@ -226,7 +244,7 @@ def drawDSFFileBuildingSplines():
         buildingName = "{{building.Name}}"
         buildingIndex = {{building.Index}}
     {% for node in building.Nodes -%}
-    splineNodeArray.append(SplineNode({{node.X}},{{node.Y}},toBool("{{node.IsBezier}}"),{{node.BezierControlX}},{{node.BezierControlY}},toBool("{{node.OpenLoop}}"),toBool("{{node.CloseLoop}}"),toBool("{{node.Render}}")))
+    splineNodeArray.append(SplineNode({{node.X}},{{node.Y}},toBool("{{node.IsBezier}}"),toBool("{{node.IsBezierCorner}}"),toBool("{{node.IsCurve}}"),{{node.BezierControl1X}},{{node.BezierControl1Y}},{{node.BezierControl2X}},{{node.BezierControl2Y}},toBool("{{node.OpenLoop}}"),toBool("{{node.CloseLoop}}"),toBool("{{node.Render}}")))
     {% endfor -%}
     drawSpline(splineNodeArray, "Building", buildingName, buildingIndex)
     {% endfor -%}
@@ -337,7 +355,7 @@ def main():
     # Maximise the top viewport
     MaxPlus.ViewportManager.SetActiveViewport(0)
     MaxPlus.ViewportManager.SetViewportMax(True)
-    
+
     #Set units to meters. 1 unit = 1 meter
     maxScript("units.DisplayType = #Metric")
     maxScript("units.MetricType = #meters")
@@ -373,50 +391,65 @@ def main():
     materials["mixedDecals"] = mixedDecalsMaterial
     materials["runwayDark"] = runwayDarkMaterial
 
-    if doDrawRunways:
-        drawRunways()
+    if processRunways:
+        if doDrawRunways:
+            drawRunways()
 
-    if doDrawRunwayDecals:
-        drawRunwayDecals()
+    if processRunwayDecals:
+        if doDrawRunwayDecals:
+            drawRunwayDecals()
 
-    if doDrawDATFilePavementSplines:
-        drawDATFilePavementSplines()
+    if processPavements:
+        if doDrawDATFilePavementSplines:
+            drawDATFilePavementSplines()
 
-    if doDrawDSFFilePavementSplines:
-        drawDSFFilePavementSplines()
+    if processPavements:
+        if doDrawDSFFilePavementSplines:
+            drawDSFFilePavementSplines()
 
-    if doDrawDSFFileBuildingSplines:
-        drawDSFFileBuildingSplines()
+    if processBuildings:
+        if doDrawDSFFileBuildingSplines:
+            drawDSFFileBuildingSplines()
 
-    if doConvertDATFilePavementSplinesToEditablePolys:
-        convertDATFilePavementSplinesToEditablePolys()
+    if processPavements:
+        if doConvertDATFilePavementSplinesToEditablePolys:
+            convertDATFilePavementSplinesToEditablePolys()
 
-    if doConvertLinearFeaturesSplinesToEditablePolys:
-        convertLinearFeaturesSplinesToEditablePolys()
+    if processLinearFeatures:
+        if doConvertLinearFeaturesSplinesToEditablePolys:
+            convertLinearFeaturesSplinesToEditablePolys()
 
-    if doConvertDSFFilePavementSplinesToEditablePolys:
-        convertDSFFilePavementSplinesToEditablePolys()
+    if processPavements:
+        if doConvertDSFFilePavementSplinesToEditablePolys:
+            convertDSFFilePavementSplinesToEditablePolys()
 
-    if doConvertDSFFileBuildingSplinesToEditablePolys:
-        convertDSFFileBuildingSplinesToEditablePolys()
+    if processBuildings:
+        if doConvertDSFFileBuildingSplinesToEditablePolys:
+            convertDSFFileBuildingSplinesToEditablePolys()
 
-    if doTextureRunways:
-        textureRunways()
+    if processRunways:
+        if doTextureRunways:
+            textureRunways()
 
-    if doTextureRunwayDecals:
-        textureRunwayDecals()
+    if processRunwayDecals:
+        if doTextureRunwayDecals:
+            textureRunwayDecals()
 
-    if doTexturePavements:
-        texturePavements()
+    if processPavements:
+        if doTexturePavements:
+            texturePavements()
 
-    if doTextureLinearFeatures:
-        textureLinearFeatures()
+    if processLinearFeatures:
+        if doTextureLinearFeatures:
+            textureLinearFeatures()
 
-    if doBooleanUnionRunways:
-        booleanUnionRunways()
+    if processRunways:
+        if doBooleanUnionRunways:
+            booleanUnionRunways()
 
-    if doBooleanUnionPavements:
-        booleanUnionPavements()
+    if processPavements:
+        if doBooleanUnionPavements:
+            booleanUnionPavements()
 
     if doDrawSigns:
         drawSigns()

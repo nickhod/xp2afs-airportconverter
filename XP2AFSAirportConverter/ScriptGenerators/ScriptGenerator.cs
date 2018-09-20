@@ -127,8 +127,10 @@ namespace XP2AFSAirportConverter.ScriptGenerators
                     lastPosition = nodePosition;
 
 
-                    GeoCoordinate bezierCoord = null;
-                    Point bezierPosition = null;
+                    GeoCoordinate bezierControl1Coord = null;
+                    GeoCoordinate bezierControl2Coord = null;
+                    Point bezierControl1Position = null;
+                    Point bezierControl2Position = null;
 
                     scriptNode.X = nodePosition.X;
                     scriptNode.Y = nodePosition.Y;
@@ -150,69 +152,41 @@ namespace XP2AFSAirportConverter.ScriptGenerators
                         lastNodeWasCloseLoop = false;
                     }
 
-                    if (node.BezierControlPointLatitude.HasValue && node.BezierControlPointLongitude.HasValue)
+                    if (node.BezierControlPoint1Latitude.HasValue && node.BezierControlPoint1Longitude.HasValue)
                     {
-                        bezierCoord = new GeoCoordinate(node.BezierControlPointLatitude.Value, node.BezierControlPointLongitude.Value);
-                        bezierPosition = GeoCoordinateToPoint(tscFile.Location, bezierCoord);
+                        bezierControl1Coord = new GeoCoordinate(node.BezierControlPoint1Latitude.Value, node.BezierControlPoint1Longitude.Value);
+                        bezierControl2Coord = new GeoCoordinate(node.BezierControlPoint2Latitude.Value, node.BezierControlPoint2Longitude.Value);
+                        bezierControl1Position = GeoCoordinateToPoint(tscFile.Location, bezierControl1Coord);
+                        bezierControl2Position = GeoCoordinateToPoint(tscFile.Location, bezierControl2Coord);
 
-                        scriptNode.BezierControlX = bezierPosition.X;
-                        scriptNode.BezierControlY = bezierPosition.Y;
+                        scriptNode.BezierControl1X = bezierControl2Position.X;
+                        scriptNode.BezierControl1Y = bezierControl2Position.Y;
+
+                        scriptNode.BezierControl2X = bezierControl1Position.X;
+                        scriptNode.BezierControl2Y = bezierControl1Position.Y;
+
                         scriptNode.IsBezier = true;
+
+                        if (node.SplitBezier)
+                        {
+                            scriptNode.IsBezierCorner = true;
+                        }
+                        else
+                        {
+                            scriptNode.IsBezierCorner = false;
+                        }
                     }
 
-                    if (!duplicate)
+                    if (node.IsCurve)
                     {
-                        lastScriptNode = scriptNode;
-                        scriptPavement.Nodes.Add(scriptNode);
+                        scriptNode.IsCurve = true;
                     }
                     else
                     {
-                        // This is a duplicate, but it's a bezier so we need to render it
-                        if (scriptNode.IsBezier)
-                        {
-                            //if (lastScriptNode.IsBezier)
-                            //{
-                            //    lastScriptNode = scriptNode;
-                            //    scriptPavement.Nodes.Add(scriptNode);
-                            //}
-                            //else
-                            //{
-
-                            //}
-
-                            lastScriptNode.Render = false;
-
-                            if (lastScriptNode.CloseLoop)
-                            {
-                                scriptNode.CloseLoop = true;
-                            }
-
-                            if (lastScriptNode.OpenLoop)
-                            {
-                                scriptNode.OpenLoop = true;
-                            }
-
-                            lastScriptNode = scriptNode;
-                            scriptPavement.Nodes.Add(scriptNode);
-                        }
-                        // Not a duplicate, don't add it so it wont be rendered
-                        else
-                        {
-                            if (scriptNode.CloseLoop)
-                            {
-                                lastScriptNode.CloseLoop = true;
-                            }
-
-                            if (scriptNode.OpenLoop)
-                            {
-                                lastScriptNode.OpenLoop = true;
-                            }
-                        }
-
-
+                        scriptNode.IsCurve = false;
                     }
 
-
+                    scriptPavement.Nodes.Add(scriptNode);
                 }
 
                 scriptPavement.Index = i;

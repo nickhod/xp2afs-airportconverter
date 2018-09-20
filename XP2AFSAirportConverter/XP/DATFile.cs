@@ -142,6 +142,7 @@ namespace XP2AFSAirportConverter.XP
 
     public class Node
     {
+        public int RowCode { get; set; }
         public double Latitude { get; set; }
         public double Longitude { get; set; }
 
@@ -150,7 +151,8 @@ namespace XP2AFSAirportConverter.XP
 
         public double? BezierControlPoint2Latitude { get; set; }
         public double? BezierControlPoint2Longitude { get; set; }
-
+        public bool SplitBezier { get; set; }
+        public bool IsCurve { get; set; }
         public bool End { get; set; }
         public bool CloseLoop { get; set; }
 
