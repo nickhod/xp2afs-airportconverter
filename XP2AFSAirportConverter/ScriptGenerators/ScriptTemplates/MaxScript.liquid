@@ -172,7 +172,7 @@ def drawSpline(splineNodeArray, namePrefix, name, index):
 
             if node.isBezier:
                 if node.isBezierCorner:
-                    maxScript("addKnot sp 1 #bezierCorner #curve [{0}, {1}, 0] [{2}, {3}, 0] [{4}, {5}, 0]".format(node.x, node.y, node.bezierControl1X, node.bezierControl1Y, node.bezierControl2X, node.bezierControl2Y))
+                    maxScript("addKnot sp 1 #bezier #curve [{0}, {1}, 0] [{2}, {3}, 0] [{4}, {5}, 0]".format(node.x, node.y, node.bezierControl1X, node.bezierControl1Y, node.bezierControl2X, node.bezierControl2Y))
                 else:
                     maxScript("addKnot sp 1 #bezier #curve [{0}, {1}, 0] [{2}, {3}, 0] [{4}, {5}, 0]".format(node.x, node.y, node.bezierControl1X, node.bezierControl1Y, node.bezierControl2X, node.bezierControl2Y))
             else:

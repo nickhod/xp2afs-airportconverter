@@ -947,8 +947,17 @@ http://developer.x-plane.com/wp-content/uploads/2015/11/XP-APT1000-Spec.pdf
                     }
                     else
                     {
-                        node.BezierControlPoint2Latitude = node.Latitude;
-                        node.BezierControlPoint2Longitude = node.Longitude;
+                        //node.BezierControlPoint2Latitude = node.Latitude;
+                        //node.BezierControlPoint2Longitude = node.Longitude;
+
+                        var nodeToControlPoint1DistanceLat = node.BezierControlPoint1Latitude - node.Latitude;
+                        var nodeToControlPoint1DistanceLon = node.BezierControlPoint1Longitude - node.Longitude;
+
+                        var nodeToControlPoint2DistanceLat = nodeToControlPoint1DistanceLat * -1;
+                        var nodeToControlPoint2DistanceLon = nodeToControlPoint1DistanceLon * -1;
+
+                        node.BezierControlPoint2Latitude = node.Latitude + nodeToControlPoint2DistanceLat;
+                        node.BezierControlPoint2Longitude = node.Longitude + nodeToControlPoint2DistanceLon;
                     }
                 }
 
