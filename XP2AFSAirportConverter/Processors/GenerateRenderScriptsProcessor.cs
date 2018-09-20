@@ -77,6 +77,9 @@ namespace XP2AFSAirportConverter.Processors
                 this.datConverter.Convert(datFile, tscFile, tocFile);
                 this.dsfConverter.Convert(dsfFile, tscFile, tocFile);
 
+                // Update the TMC file
+                this.UpdateTMCFile(tmcFile, airportAFSFullDirectory);
+
                 // Get strings of the AFS files
                 var tscFileString = tscFile.ToString();
                 var tocFileString = tocFile.ToString();
@@ -103,5 +106,16 @@ namespace XP2AFSAirportConverter.Processors
                 log.ErrorFormat("Could not find the data for airport {0} make sure it is downloaded", icaoCode);
             }
         }
+
+        private void UpdateTMCFile(TMCFile tmcFile, string airportAFSFullDirectory)
+        {
+            var baseFolder = airportAFSFullDirectory + @"\Output\";
+
+            tmcFile.BaseOutputFolder = baseFolder;
+            tmcFile.InputFolder = "./";
+            tmcFile.OutputFolder = "";
+        }
+
+
     }
 }

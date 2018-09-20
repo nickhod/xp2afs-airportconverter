@@ -44,8 +44,25 @@ namespace XP2AFSAirportConverter.Converters
                 }
             }
 
-
             tscFile.Location = this.CalculateAirportCenterPoint();
+
+
+            var airportNameClean = tscFile.AirportShortName.Replace(" ", "_").ToLower();
+
+            // Add the runway object
+            TSCSceneryObject runwayObject = new TSCSceneryObject();
+            runwayObject.GeometryFile = String.Format("{0}_{1}_rwy", tscFile.ICAO.ToLower(), airportNameClean);
+            runwayObject.Position = new GeoCoordinate3d(tscFile.Location);
+            runwayObject.Type = "ground";
+
+            // Add the decals object
+            TSCSceneryObject decalObject = new TSCSceneryObject();
+            decalObject.GeometryFile = String.Format("{0}_{1}_decal", tscFile.ICAO.ToLower(), airportNameClean);
+            decalObject.Position = new GeoCoordinate3d(tscFile.Location);
+            decalObject.Type = "decal";
+
+            tscFile.Objects.Add(runwayObject);
+            tscFile.Objects.Add(decalObject);
         }
 
         /// <summary>

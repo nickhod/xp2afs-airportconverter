@@ -145,8 +145,12 @@ namespace XP2AFSAirportConverter.XP
         public double Latitude { get; set; }
         public double Longitude { get; set; }
 
-        public double? BezierControlPointLatitude { get; set; }
-        public double? BezierControlPointLongitude { get; set; }
+        public double? BezierControlPoint1Latitude { get; set; }
+        public double? BezierControlPoint1Longitude { get; set; }
+
+        public double? BezierControlPoint2Latitude { get; set; }
+        public double? BezierControlPoint2Longitude { get; set; }
+
         public bool End { get; set; }
         public bool CloseLoop { get; set; }
 

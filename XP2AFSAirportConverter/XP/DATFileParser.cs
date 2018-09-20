@@ -14,6 +14,9 @@ namespace XP2AFSAirportConverter.XP
     //http://developer.x-plane.com/wp-content/uploads/2015/11/XP-APT850-Spec.pdf
     //http://developer.x-plane.com/wp-content/uploads/2015/11/XP-APT1000-Spec.pdf
 
+
+    //https://forums.x-plane.org/index.php?/forums/topic/66713-understanding-the-logic-of-bezier-control-points-in-aptdat/
+
     public enum RowCode
     {
         LandAirportHeader = 1,
@@ -110,6 +113,7 @@ http://developer.x-plane.com/wp-content/uploads/2015/11/XP-APT1000-Spec.pdf
 
             return datFile;
         }
+
 
         private void ParseLine(string line)
         {
@@ -757,7 +761,7 @@ http://developer.x-plane.com/wp-content/uploads/2015/11/XP-APT1000-Spec.pdf
                 double bezierLatitude;
                 if (double.TryParse(data[3], out bezierLatitude))
                 {
-                    node.BezierControlPointLatitude = bezierLatitude;
+                    node.BezierControlPoint1Latitude = bezierLatitude;
                 }
                 else
                 {
@@ -767,7 +771,7 @@ http://developer.x-plane.com/wp-content/uploads/2015/11/XP-APT1000-Spec.pdf
                 double bezierLongitude;
                 if (double.TryParse(data[4], out bezierLongitude))
                 {
-                    node.BezierControlPointLongitude = bezierLongitude;
+                    node.BezierControlPoint1Longitude = bezierLongitude;
                 }
                 else
                 {
@@ -854,6 +858,7 @@ http://developer.x-plane.com/wp-content/uploads/2015/11/XP-APT1000-Spec.pdf
                         }
 
                         ((List<Node>)this.datFile.AirportBoundary.Nodes).AddRange(this.temporaryNodeCollection);
+                        this.NodeCollectionSecondPass(this.datFile.AirportBoundary.Nodes);
 
                         break;
                     case RowCode.Pavement:
@@ -869,6 +874,7 @@ http://developer.x-plane.com/wp-content/uploads/2015/11/XP-APT1000-Spec.pdf
                             }
 
                             ((List<Node>)pavement.Nodes).AddRange(this.temporaryNodeCollection);
+                            this.NodeCollectionSecondPass(pavement.Nodes);
                         }
                         else
                         {
@@ -877,11 +883,24 @@ http://developer.x-plane.com/wp-content/uploads/2015/11/XP-APT1000-Spec.pdf
 
                         break;
                     case RowCode.LinearFeature:
+                        //this.NodeCollectionSecondPass(linearFeature.Nodes);
                         break;
                 }
+
             }
 
             this.temporaryNodeCollection.Clear();
+        }
+
+        private void NodeCollectionSecondPass(IList<Node> nodes)
+        {
+            Node lastNode = null;
+
+            foreach (Node node in nodes)
+            {
+
+                lastNode = node;
+            }
         }
 
         private Boolean IsNumber(String s)

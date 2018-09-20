@@ -19,13 +19,13 @@ namespace XP2AFSAirportConverter.AFS
             sb.AppendLine("<[file][][]");
             sb.AppendLine("  <[tm_config][][]");
             sb.AppendLine("");
-            sb.AppendLine("    <[string8][base_output_folder][]>");
+            sb.AppendLine("    <[string8][base_output_folder][" + this.BaseOutputFolder + "]>");
             sb.AppendLine("    <[string8][texture_base_type][ttx_dxt]>");
             sb.AppendLine("");
             sb.AppendLine("    <[list_tm_config_folderpair][folder_pairs][]");
             sb.AppendLine("      <[tm_config_folderpair][element][1]");
-            sb.AppendLine("        <[string8][input_folder][./]>");
-            sb.AppendLine("        <[string8][output_folder][scenery/places/kigm_kingman/]>");
+            sb.AppendLine("        <[string8][input_folder][" + this.InputFolder + "]>");
+            sb.AppendLine("        <[string8][output_folder][" + this.OutputFolder  + "]>");
             sb.AppendLine("        <[string8][type][place]>");
             sb.AppendLine("        <[uint32][recurse_level][0]>");
             sb.AppendLine("        <[list_string8][file_types][tsc tgi jpg bmp tif png ]>");

@@ -38,6 +38,13 @@ namespace XP2AFSAirportConverter.Common
         {
         }
 
+        public GeoCoordinate3d(GeoCoordinate geoCoordinate)
+        {
+            this.Latitude = geoCoordinate.Latitude;
+            this.Longitude = geoCoordinate.Longitude;
+            this.Height = 0;
+        }
+
         public GeoCoordinate3d(double latitude, double longitude)
         {
             this.Latitude = latitude;
