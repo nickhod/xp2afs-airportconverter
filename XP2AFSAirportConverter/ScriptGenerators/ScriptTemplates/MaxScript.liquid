@@ -22,6 +22,7 @@ processRunwayDecals = True
 processPavements = True
 processBuildings = False
 processLinearFeatures = True
+processGroundPoly = True
 
 
 # Fine grained control of which actions are performed
@@ -43,6 +44,7 @@ doTexturePavements = True
 doTextureLinearFeatures = True
 doBooleanUnionRunways = True
 doBooleanUnionPavements = True
+doDrawAirportBoundarySpline = True
 doSaveFile = True
 
 saveFilePath = r"{{SaveFilePath}}"
@@ -172,7 +174,7 @@ def drawSpline(splineNodeArray, namePrefix, name, index):
 
             if node.isBezier:
                 if node.isBezierCorner:
-                    maxScript("addKnot sp 1 #bezier #curve [{0}, {1}, 0] [{2}, {3}, 0] [{4}, {5}, 0]".format(node.x, node.y, node.bezierControl1X, node.bezierControl1Y, node.bezierControl2X, node.bezierControl2Y))
+                    maxScript("addKnot sp 1 #bezier #line [{0}, {1}, 0] [{2}, {3}, 0] [{4}, {5}, 0]".format(node.x, node.y, node.bezierControl1X, node.bezierControl1Y, node.bezierControl2X, node.bezierControl2Y))
                 else:
                     maxScript("addKnot sp 1 #bezier #curve [{0}, {1}, 0] [{2}, {3}, 0] [{4}, {5}, 0]".format(node.x, node.y, node.bezierControl1X, node.bezierControl1Y, node.bezierControl2X, node.bezierControl2Y))
             else:
@@ -344,6 +346,16 @@ def booleanUnionPavements():
     pass
 
 
+#########################################################
+# Draw Airport Boundary Spline
+#########################################################
+def drawAirportBoundarySpline():
+        splineNodeArray = []
+    {% for node in AirportBoundary.Nodes -%}
+    splineNodeArray.append(SplineNode({{node.X}},{{node.Y}},toBool("{{node.IsBezier}}"),toBool("{{node.IsBezierCorner}}"),toBool("{{node.IsCurve}}"),{{node.BezierControl1X}},{{node.BezierControl1Y}},{{node.BezierControl2X}},{{node.BezierControl2Y}},toBool("{{node.OpenLoop}}"),toBool("{{node.CloseLoop}}"),toBool("{{node.Render}}")))
+    {% endfor -%}
+    drawSpline(splineNodeArray, "", "Airport Boundary", 0)
+
 def maxScript(script):
     return MaxPlus.Core.EvalMAXScript(script)
 
@@ -453,6 +465,9 @@ def main():
 
     if doDrawSigns:
         drawSigns()
+
+    if processGroundPoly:
+        drawAirportBoundarySpline()
 
     if doSaveFile:
         maxScript("saveMaxFile \"{0}\" saveAsVersion:2016".format(saveFilePath))

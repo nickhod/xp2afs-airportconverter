@@ -93,6 +93,7 @@ namespace XP2AFSAirportConverter.ScriptGenerators
             }
         }
 
+
         protected void CalculateDATFilePavements(ScriptModel scriptModel)
         {
             int i = 0;
@@ -102,92 +103,7 @@ namespace XP2AFSAirportConverter.ScriptGenerators
                 scriptPavement.Nodes = new List<ScriptNode>();
                 scriptPavement.Name = pavement.Description;
 
-                bool lastNodeWasCloseLoop = true;
-                Point lastPosition = null;
-                ScriptNode lastScriptNode = null;
-
-                foreach (Node node in pavement.Nodes)
-                {
-                    var scriptNode = new ScriptNode();
-
-                    var nodeCoord = new GeoCoordinate(node.Latitude, node.Longitude);
-                    var nodePosition = GeoCoordinateToPoint(tscFile.Location, nodeCoord);
-
-                    bool duplicate = false;
-
-                    if (lastPosition != null)
-                    {
-                        if (nodePosition.X == lastPosition.X && nodePosition.Y == nodePosition.Y)
-                        {
-                            duplicate = true;
-                            Debug.WriteLine("duplicate");
-                        }
-                    }
-
-                    lastPosition = nodePosition;
-
-
-                    GeoCoordinate bezierControl1Coord = null;
-                    GeoCoordinate bezierControl2Coord = null;
-                    Point bezierControl1Position = null;
-                    Point bezierControl2Position = null;
-
-                    scriptNode.X = nodePosition.X;
-                    scriptNode.Y = nodePosition.Y;
-                    scriptNode.IsBezier = false;
-                    scriptNode.Render = true;
-
-                    if (lastNodeWasCloseLoop)
-                    {
-                        scriptNode.OpenLoop = true;
-                    }
-
-                    if (node.CloseLoop)
-                    {
-                        scriptNode.CloseLoop = true;
-                        lastNodeWasCloseLoop = true;
-                    }
-                    else
-                    {
-                        lastNodeWasCloseLoop = false;
-                    }
-
-                    if (node.BezierControlPoint1Latitude.HasValue && node.BezierControlPoint1Longitude.HasValue)
-                    {
-                        bezierControl1Coord = new GeoCoordinate(node.BezierControlPoint1Latitude.Value, node.BezierControlPoint1Longitude.Value);
-                        bezierControl2Coord = new GeoCoordinate(node.BezierControlPoint2Latitude.Value, node.BezierControlPoint2Longitude.Value);
-                        bezierControl1Position = GeoCoordinateToPoint(tscFile.Location, bezierControl1Coord);
-                        bezierControl2Position = GeoCoordinateToPoint(tscFile.Location, bezierControl2Coord);
-
-                        scriptNode.BezierControl1X = bezierControl2Position.X;
-                        scriptNode.BezierControl1Y = bezierControl2Position.Y;
-
-                        scriptNode.BezierControl2X = bezierControl1Position.X;
-                        scriptNode.BezierControl2Y = bezierControl1Position.Y;
-
-                        scriptNode.IsBezier = true;
-
-                        if (node.SplitBezier)
-                        {
-                            scriptNode.IsBezierCorner = true;
-                        }
-                        else
-                        {
-                            scriptNode.IsBezierCorner = false;
-                        }
-                    }
-
-                    if (node.IsCurve)
-                    {
-                        scriptNode.IsCurve = true;
-                    }
-                    else
-                    {
-                        scriptNode.IsCurve = false;
-                    }
-
-                    scriptPavement.Nodes.Add(scriptNode);
-                }
+                this.AddSplineNodes(pavement.Nodes, scriptPavement.Nodes);
 
                 scriptPavement.Index = i;
                 scriptModel.DATPavements.Add(scriptPavement);
@@ -195,6 +111,19 @@ namespace XP2AFSAirportConverter.ScriptGenerators
             }
 
 
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        protected void CalculateAirportBoundary(ScriptModel scriptModel)
+        {
+            var scriptAirportBoundary = new ScriptAirportBoundary();
+            scriptAirportBoundary.Nodes = new List<ScriptNode>();
+
+            this.AddSplineNodes(this.datFile.AirportBoundary.Nodes, scriptAirportBoundary.Nodes);
+
+            scriptModel.AirportBoundary = scriptAirportBoundary;
         }
 
         protected void CalculateDSFFileBuildings(ScriptModel scriptModel)
@@ -298,5 +227,98 @@ namespace XP2AFSAirportConverter.ScriptGenerators
 
             return point;
         }
+
+        private void AddSplineNodes(IList<Node> nodes, IList<ScriptNode> scriptNodes)
+        {
+            bool lastNodeWasCloseLoop = true;
+            Point lastPosition = null;
+            ScriptNode lastScriptNode = null;
+
+            foreach (Node node in nodes)
+            {
+                var scriptNode = new ScriptNode();
+
+                var nodeCoord = new GeoCoordinate(node.Latitude, node.Longitude);
+                var nodePosition = GeoCoordinateToPoint(tscFile.Location, nodeCoord);
+
+                bool duplicate = false;
+
+                if (lastPosition != null)
+                {
+                    if (nodePosition.X == lastPosition.X && nodePosition.Y == nodePosition.Y)
+                    {
+                        duplicate = true;
+                        Debug.WriteLine("duplicate");
+                    }
+                }
+
+                lastPosition = nodePosition;
+
+
+                GeoCoordinate bezierControl1Coord = null;
+                GeoCoordinate bezierControl2Coord = null;
+                Point bezierControl1Position = null;
+                Point bezierControl2Position = null;
+
+                scriptNode.X = nodePosition.X;
+                scriptNode.Y = nodePosition.Y;
+                scriptNode.IsBezier = false;
+                scriptNode.Render = true;
+
+                if (lastNodeWasCloseLoop)
+                {
+                    scriptNode.OpenLoop = true;
+                }
+
+                if (node.CloseLoop)
+                {
+                    scriptNode.CloseLoop = true;
+                    lastNodeWasCloseLoop = true;
+                }
+                else
+                {
+                    lastNodeWasCloseLoop = false;
+                }
+
+                if (node.BezierControlPoint1Latitude.HasValue && node.BezierControlPoint1Longitude.HasValue)
+                {
+                    bezierControl1Coord = new GeoCoordinate(node.BezierControlPoint1Latitude.Value, node.BezierControlPoint1Longitude.Value);
+                    bezierControl2Coord = new GeoCoordinate(node.BezierControlPoint2Latitude.Value, node.BezierControlPoint2Longitude.Value);
+                    bezierControl1Position = GeoCoordinateToPoint(tscFile.Location, bezierControl1Coord);
+                    bezierControl2Position = GeoCoordinateToPoint(tscFile.Location, bezierControl2Coord);
+
+                    scriptNode.BezierControl1X = bezierControl2Position.X;
+                    scriptNode.BezierControl1Y = bezierControl2Position.Y;
+
+                    scriptNode.BezierControl2X = bezierControl1Position.X;
+                    scriptNode.BezierControl2Y = bezierControl1Position.Y;
+
+                    scriptNode.IsBezier = true;
+
+                    if (node.SplitBezier)
+                    {
+                        scriptNode.IsBezierCorner = true;
+                    }
+                    else
+                    {
+                        scriptNode.IsBezierCorner = false;
+                    }
+                }
+
+                if (node.IsCurve)
+                {
+                    scriptNode.IsCurve = true;
+                }
+                else
+                {
+                    scriptNode.IsCurve = false;
+                }
+
+                scriptNodes.Add(scriptNode);
+            }
+
+
+        }
+
     }
 }

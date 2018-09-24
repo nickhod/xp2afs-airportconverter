@@ -26,6 +26,11 @@ namespace XP2AFSAirportConverter.ScriptGenerators.Models
         public int Index { get; set; }
     }
 
+    public class ScriptAirportBoundary: Drop
+    {
+        public IList<ScriptNode> Nodes { get; set; }
+    }
+
     public class ScriptBuilding : Drop
     {
         public IList<ScriptNode> Nodes { get; set; }
@@ -60,12 +65,14 @@ namespace XP2AFSAirportConverter.ScriptGenerators.Models
             this.DATPavements = new List<ScriptPavement>();
             this.DSFPavements = new List<ScriptPavement>();
             this.Buildings = new List<ScriptBuilding>();
+            this.AirportBoundary = new ScriptAirportBoundary();
         }
 
         public IList<ScriptPavement> DATPavements { get; set; }
         public IList<ScriptPavement> DSFPavements { get; set; }
         public IList<ScriptRunway> Runways { get; set; }
         public IList<ScriptBuilding> Buildings { get; set; }
+        public ScriptAirportBoundary AirportBoundary { get; set; }
         public string AirportName { get; set; }
         public string AirportICAO { get; set; }
         public DateTime GeneratedOn { get; set; }

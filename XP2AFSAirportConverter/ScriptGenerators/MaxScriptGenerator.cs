@@ -29,6 +29,7 @@ namespace XP2AFSAirportConverter.ScriptGenerators
             this.CalculateRunways(scriptModel);
             this.CalculateDATFilePavements(scriptModel);
             this.CalculateDSFFileBuildings(scriptModel);
+            this.CalculateAirportBoundary(scriptModel);
 
             scriptModel.AirportName = datFile.AirportHeader.Name;
             scriptModel.AirportICAO = datFile.AirportHeader.ICAOCode;
