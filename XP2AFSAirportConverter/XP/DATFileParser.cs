@@ -664,6 +664,15 @@ http://developer.x-plane.com/wp-content/uploads/2015/11/XP-APT1000-Spec.pdf
                 // Description
                 pavement.Description = data[4];
 
+                if (data.Length > 5)
+                {
+                    for (int i = 5; i < data.Length; i++)
+                    {
+                        pavement.Description = pavement.Description + " " + data[i];
+                    }
+                }
+
+
                 if (this.datFile.Pavements == null)
                 {
                     this.datFile.Pavements = new List<Pavement>();
@@ -861,6 +870,7 @@ http://developer.x-plane.com/wp-content/uploads/2015/11/XP-APT1000-Spec.pdf
 
                         ((List<Node>)this.datFile.AirportBoundary.Nodes).AddRange(this.temporaryNodeCollection);
                         this.datFile.AirportBoundary.Nodes = this.NodeCollectionSecondPass(this.datFile.AirportBoundary.Nodes);
+                        this.datFile.AirportBoundary.Nodes = this.NodeCollectionThirdPass(this.datFile.AirportBoundary.Nodes);
 
                         break;
                     case RowCode.Pavement:
@@ -877,6 +887,8 @@ http://developer.x-plane.com/wp-content/uploads/2015/11/XP-APT1000-Spec.pdf
 
                             ((List<Node>)pavement.Nodes).AddRange(this.temporaryNodeCollection);
                             pavement.Nodes = this.NodeCollectionSecondPass(pavement.Nodes);
+                            pavement.Nodes = this.NodeCollectionThirdPass(pavement.Nodes);
+
                         }
                         else
                         {
@@ -928,6 +940,23 @@ http://developer.x-plane.com/wp-content/uploads/2015/11/XP-APT1000-Spec.pdf
                             addNode = false;
                         }
                     }
+                }
+
+                // If the node in front is a bezier with the same coordinates as this node, don't add this node
+                // Can we look ahead
+                if (i < nodes.Count() - 1)
+                {
+                    // Is the node ahead a bezier
+                    if (nodes[i+1].BezierControlPoint1Latitude.HasValue)
+                    {
+                        // Is the node ahead the same point?
+                        if (node.Latitude == nodes[i + 1].Latitude &&
+                            node.Longitude == nodes[i + 1].Longitude)
+                        {
+                            addNode = false;
+                        }
+                    }
+
                 }
 
                 // If the node is a bezier, but isn't a split bezier, mirror a control point, otherwise the second control point
@@ -983,6 +1012,49 @@ http://developer.x-plane.com/wp-content/uploads/2015/11/XP-APT1000-Spec.pdf
                         }
                     }
                 }
+
+                if (addNode)
+                {
+                    finalNodeList.Add(node);
+                }
+
+                i++;
+            }
+
+            return finalNodeList;
+        }
+
+        private List<Node> NodeCollectionThirdPass(IList<Node> nodes)
+        {
+            List<Node> finalNodeList = new List<Node>();
+            int i = 0;
+            foreach (Node node in nodes)
+            {
+                bool addNode = true;
+
+
+                // If the node in front is a bezier with the same coordinates as this node, don't add this node
+                // instead use the bezier control points of it as the second bezier control points of this node
+                // Can we look ahead
+                if (i < nodes.Count() - 1)
+                {
+                    // Is the node ahead a bezier
+                    if (nodes[i + 1].BezierControlPoint1Latitude.HasValue)
+                    {
+                        var nextNode = nodes[i + 1];
+                        // Is the node ahead the same point?
+                        if (node.Latitude == nextNode.Latitude &&
+                            node.Longitude == nextNode.Longitude)
+                        {
+                            addNode = false;
+
+                            node.BezierControlPoint2Latitude = nextNode.BezierControlPoint2Latitude;
+                            node.BezierControlPoint2Longitude = nextNode.BezierControlPoint2Longitude;
+                        }
+                    }
+
+                }
+
 
                 if (addNode)
                 {

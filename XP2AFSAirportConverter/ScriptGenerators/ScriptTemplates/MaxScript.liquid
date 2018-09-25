@@ -147,6 +147,21 @@ def createMaterial(customMaterial):
 
     return material
 
+#########################################################
+# Add Object To Layer
+#########################################################
+def addObjectToLayer(objectName, layerName)
+    # Does this layer alrady exist?
+    layer = MaxPlus.LayerManager.GetLayer(MaxPlus.WStr(layerName))
+
+    # If the layer doesn't exist, add it
+    if !layer:
+        layer = MaxPlus.LayerManager.CreateLayer(MaxPlus.WStr(layerName))
+
+    # Get the node and add it to the layer
+    node = MaxPlus.INode.GetINodeByName(objectName)
+    MaxPlus.Layer.AddToLayer(layer, node)
+
 
 #########################################################
 # Draw Runway
@@ -188,6 +203,9 @@ def drawSpline(splineNodeArray, namePrefix, name, index):
                 maxScript("updateShape sp")
                 maxScript("select sp")
                 maxScript("sp.name = \"{0} {1} {2}\"".format(namePrefix, index+1, name))
+
+                splineName = "{0} {1} {2}".format(namePrefix, index+1, name)
+                addObjectToLayer(splineName, namePrefix + "s")
                 #maxScript("poly = convertToPoly(sp)")
 
 
@@ -224,7 +242,7 @@ def drawDATFilePavementSplines():
         pavementName = "{{pavement.Name}}"
         pavementIndex = {{pavement.Index}}
     {% for node in pavement.Nodes -%}
-    splineNodeArray.append(SplineNode({{node.X}},{{node.Y}},toBool("{{node.IsBezier}}"),toBool("{{node.IsBezierCorner}}"),toBool("{{node.IsCurve}}"),{{node.BezierControl1X}},{{node.BezierControl1Y}},{{node.BezierControl2X}},{{node.BezierControl2Y}},toBool("{{node.OpenLoop}}"),toBool("{{node.CloseLoop}}"),toBool("{{node.Render}}")))
+    splineNodeArray.append(SplineNode({{node.X}},{{node.Y}},toBool("{{node.IsBezier}}"),toBool("{{node.IsBezierCorner}}"),toBool("{{node.IsCurve}}"),{{node.BezierControl1X}},{{node.BezierControl1Y}},{{node.BezierControl2X}},{{node.BezierControl2Y}},toBool("{{node.OpenLoop}}"),toBool("{{node.CloseLoop}}"),toBool("{{node.Render}}"))) {% if node.OpenLoop %}#open{% endif %} {% if node.CloseLoop %}#close{% endif %}
     {% endfor -%}
     drawSpline(splineNodeArray, "Pavement", pavementName, pavementIndex)
     {% endfor -%}
