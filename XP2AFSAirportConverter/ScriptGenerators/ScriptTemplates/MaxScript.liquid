@@ -150,17 +150,19 @@ def createMaterial(customMaterial):
 #########################################################
 # Add Object To Layer
 #########################################################
-def addObjectToLayer(objectName, layerName)
+def addObjectToLayer(objectName, layerName):
     # Does this layer alrady exist?
     layer = MaxPlus.LayerManager.GetLayer(MaxPlus.WStr(layerName))
 
     # If the layer doesn't exist, add it
-    if !layer:
+    if layer.GetUnwrappedPtr() is None:
         layer = MaxPlus.LayerManager.CreateLayer(MaxPlus.WStr(layerName))
 
     # Get the node and add it to the layer
     node = MaxPlus.INode.GetINodeByName(objectName)
-    MaxPlus.Layer.AddToLayer(layer, node)
+    
+    if node is not None:
+        MaxPlus.Layer.AddToLayer(layer, node)
 
 
 #########################################################
@@ -175,11 +177,19 @@ def drawRunway(x, y, length, width, angle, name):
     maxScript("rotate $'{0}' (angleaxis {1} [0,0,1])".format(name, angle))
     node.Position = MaxPlus.Point3(x, y, 0)
     node.Convert(MaxPlus.ClassIds.PolyMeshObject)
+    addObjectToLayer(node.Name, "Runways")
+
+#########################################################
+# Combine Splines
+#########################################################
+def combineSplinnes(splineName):
+	#http://discourse.techart.online/t/python-maxplus-how-to-combine-two-meshes/5589/4
+	pass
 
 #########################################################
 # Draw Spline
 #########################################################
-def drawSpline(splineNodeArray, namePrefix, name, index):
+def drawSpline(splineNodeArray, namePrefix, name, index, layer):
     for node in splineNodeArray:
         if node.render:
             if node.openLoop:
@@ -205,7 +215,7 @@ def drawSpline(splineNodeArray, namePrefix, name, index):
                 maxScript("sp.name = \"{0} {1} {2}\"".format(namePrefix, index+1, name))
 
                 splineName = "{0} {1} {2}".format(namePrefix, index+1, name)
-                addObjectToLayer(splineName, namePrefix + "s")
+                addObjectToLayer(splineName, layer)
                 #maxScript("poly = convertToPoly(sp)")
 
 
@@ -244,7 +254,7 @@ def drawDATFilePavementSplines():
     {% for node in pavement.Nodes -%}
     splineNodeArray.append(SplineNode({{node.X}},{{node.Y}},toBool("{{node.IsBezier}}"),toBool("{{node.IsBezierCorner}}"),toBool("{{node.IsCurve}}"),{{node.BezierControl1X}},{{node.BezierControl1Y}},{{node.BezierControl2X}},{{node.BezierControl2Y}},toBool("{{node.OpenLoop}}"),toBool("{{node.CloseLoop}}"),toBool("{{node.Render}}"))) {% if node.OpenLoop %}#open{% endif %} {% if node.CloseLoop %}#close{% endif %}
     {% endfor -%}
-    drawSpline(splineNodeArray, "Pavement", pavementName, pavementIndex)
+    drawSpline(splineNodeArray, "Pavement", pavementName, pavementIndex, "DAT File Pavements")
     {% endfor -%}
 
 #########################################################
@@ -266,7 +276,7 @@ def drawDSFFileBuildingSplines():
     {% for node in building.Nodes -%}
     splineNodeArray.append(SplineNode({{node.X}},{{node.Y}},toBool("{{node.IsBezier}}"),toBool("{{node.IsBezierCorner}}"),toBool("{{node.IsCurve}}"),{{node.BezierControl1X}},{{node.BezierControl1Y}},{{node.BezierControl2X}},{{node.BezierControl2Y}},toBool("{{node.OpenLoop}}"),toBool("{{node.CloseLoop}}"),toBool("{{node.Render}}")))
     {% endfor -%}
-    drawSpline(splineNodeArray, "Building", buildingName, buildingIndex)
+    drawSpline(splineNodeArray, "Building", buildingName, buildingIndex, "Buildings")
     {% endfor -%}
 
 #########################################################
@@ -372,7 +382,7 @@ def drawAirportBoundarySpline():
     {% for node in AirportBoundary.Nodes -%}
     splineNodeArray.append(SplineNode({{node.X}},{{node.Y}},toBool("{{node.IsBezier}}"),toBool("{{node.IsBezierCorner}}"),toBool("{{node.IsCurve}}"),{{node.BezierControl1X}},{{node.BezierControl1Y}},{{node.BezierControl2X}},{{node.BezierControl2Y}},toBool("{{node.OpenLoop}}"),toBool("{{node.CloseLoop}}"),toBool("{{node.Render}}")))
     {% endfor -%}
-    drawSpline(splineNodeArray, "", "Airport Boundary", 0)
+    drawSpline(splineNodeArray, "", "Airport Boundary", 0, "Airport Boundary")
 
 def maxScript(script):
     return MaxPlus.Core.EvalMAXScript(script)
