@@ -119,6 +119,7 @@
     <Compile Include="Processors\BuildAirportsProcessor.cs" />
     <Compile Include="Processors\DownloadAirportsProcessor.cs" />
     <Compile Include="Processors\GenerateRenderScriptsProcessor.cs" />
+    <Compile Include="Processors\LocationDataProcessor.cs" />
     <Compile Include="Processors\RunRenderScriptsProcessor.cs" />
     <Compile Include="Processors\UploadAirportsProcessor.cs" />
     <Compile Include="ResourceMapping\ResourceMap.cs" />

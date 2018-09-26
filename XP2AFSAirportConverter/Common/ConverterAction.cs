@@ -14,12 +14,15 @@ namespace XP2AFSAirportConverter.Common
         ImportAirportCsvList,
         Clean,
         GenerateAssetList,
+        GetMissingLocationData,
 
         // Convert steps
         GenerateRenderScripts,
         RunRenderScripts,
         BuildAirports,
         UploadAirports,
+
+
 
     }
 }

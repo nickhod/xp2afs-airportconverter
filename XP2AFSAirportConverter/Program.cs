@@ -57,6 +57,9 @@ namespace XP2AFSAirportConverter
                 Console.WriteLine("");
                 Console.WriteLine("-- Clean all generated files (use with caution)");
                 Console.WriteLine("XP2AFSAirportConverter clean");
+                Console.WriteLine("");
+                Console.WriteLine("-- Get missing location data for airports in the database");
+                Console.WriteLine("XP2AFSAirportConverter getmissinglocationdata");
             }
             else
             {

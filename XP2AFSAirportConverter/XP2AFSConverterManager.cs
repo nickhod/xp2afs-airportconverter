@@ -113,12 +113,23 @@ namespace XP2AFSAirportConverter
                         this.GenereateAssetList();
                         log.Info("Finished Generate Asset List action");
                         break;
+                    case ConverterAction.GetMissingLocationData:
+                        log.Info("Starting GetMissingLocationData action");
+                        this.GetMissingLocationData();
+                        log.Info("Finished GetMissingLocationData action");
+                        break;
 
                 }
             }
 
             log.Info("All actions complete");
 
+        }
+
+        private void GetMissingLocationData()
+        {
+            LocationDataProcessor locationDataProcessor = new LocationDataProcessor();
+            locationDataProcessor.GetMissingLocationData();
         }
 
         private void GenereateAssetList()
@@ -250,6 +261,9 @@ namespace XP2AFSAirportConverter
                         break;
                     case "generateassetlist":
                         this.actions.Add(ConverterAction.GenerateAssetList);
+                        break;
+                    case "getmissinglocationdata":
+                        this.actions.Add(ConverterAction.GetMissingLocationData);
                         break;
                 }
 

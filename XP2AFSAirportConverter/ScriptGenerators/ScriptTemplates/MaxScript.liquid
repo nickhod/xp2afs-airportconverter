@@ -86,20 +86,85 @@ class CustomMaterial:
         self.opacityMap = ""
         self.bumpMap = ""
 
-#########################################################
+
+#########################################################################################################################################################
+# Utility Methods
+#########################################################################################################################################################
+
+#------------------------------------------------------------------------------
 # To Bool
-#########################################################
+#
+# Converts a lowercase true false string to a bool
+#------------------------------------------------------------------------------
 def toBool(value):
     if value == "true":
         return True
     elif value == "false":
         return False
 
+#------------------------------------------------------------------------------
+# GetMesh
+#
+# Gets the mesh of a node
+#------------------------------------------------------------------------------
+def getMesh(node):
+    meshObj = node.GetObject().AsTriObject().GetMesh()
+    return meshObj
+
+#------------------------------------------------------------------------------
+# Add Object To Layer
+#
+# Adds an object to a layer by object name and layer name.
+# If the layer does not exist it will be created
+#------------------------------------------------------------------------------
+def addObjectToLayer(objectName, layerName):
+    # Does this layer alrady exist?
+    layer = MaxPlus.LayerManager.GetLayer(MaxPlus.WStr(layerName))
+
+    # If the layer doesn't exist, add it
+    if layer.GetUnwrappedPtr() is None:
+        layer = MaxPlus.LayerManager.CreateLayer(MaxPlus.WStr(layerName))
+
+    # Get the node and add it to the layer
+    node = MaxPlus.INode.GetINodeByName(objectName)
+
+    if node is not None:
+        MaxPlus.Layer.AddToLayer(layer, node)
+
+#------------------------------------------------------------------------------
+# ObjectExists
+#
+# Gets whether an object exists by name
+#------------------------------------------------------------------------------
+def objectExists(name):
+    exists = False
+    node = MaxPlus.INode.GetINodeByName(name)
+
+    if node is not None:
+        if node.GetUnwrappedPtr() is not None:
+            exists = True
+
+    return exists
+
+#------------------------------------------------------------------------------
+# GetSplineName
+#
+# Get the name for a spline. If there is already another node
+# of the same name, "Attach" will be appended to the name
+# as this spline needs to be attached
+#------------------------------------------------------------------------------
+def getSplineName(namePrefix, number, name):
+    splineName = "{0} {1} {2}".format(namePrefix, number, name)
+
+    if objectExists(splineName):
+        splineName = splineName + " Attach"
+
+    return splineName
 
 
-#########################################################
+#------------------------------------------------------------------------------
 # Set Material Map
-#########################################################
+#------------------------------------------------------------------------------
 def setMaterialMap(material, materialSubMaps, mapId, bitmapPath):
     bitmapTex = MaxPlus.Factory.CreateDefaultBitmapTex()
     bitmapTex.SetMapName(bitmapPath)
@@ -108,9 +173,50 @@ def setMaterialMap(material, materialSubMaps, mapId, bitmapPath):
     materialSubMaps.SetSubTexmap(mapId, bitmapTex)
 
 
-#########################################################
+#------------------------------------------------------------------------------
+# Combine Splines
+#------------------------------------------------------------------------------
+def combineSplines():
+    sceneNodes = MaxPlus.Core.GetRootNode().Children
+    nodesToDelete = []
+
+    # Loop through all level 1 nodes of the scene
+    for node in sceneNodes:
+        if node.Object.GetClassName() == "SplineShape":
+            name = node.GetName()
+
+            # If any are called attach, they need to be merged with the object of the same
+            # name minus the "Attach"
+            if "Attach" in name:
+                attachObjectName = name.replace(" Attach", "")
+                attachNode = MaxPlus.INode.GetINodeByName(attachObjectName)
+
+                if attachNode is not None:
+                    splineFrom = MaxPlus.SplineShape__CastFrom(node.Object).GetShape()
+                    splineTo = MaxPlus.SplineShape__CastFrom(attachNode.Object).GetShape()
+                    splineTo.Append(splineFrom)
+                    nodesToDelete.append(node)
+
+
+    for node in nodesToDelete:
+        node.Delete()
+
+
+#------------------------------------------------------------------------------
+# Eval MaxScript
+#------------------------------------------------------------------------------
+def maxScript(script):
+    return MaxPlus.Core.EvalMAXScript(script)
+
+
+#########################################################################################################################################################
+# Rendering Methods
+#########################################################################################################################################################
+
+
+#------------------------------------------------------------------------------
 # Create Material
-#########################################################
+#------------------------------------------------------------------------------
 def createMaterial(customMaterial):
     #bitmapTex = MaxPlus.Factory.CreateDefaultBitmapTex()
     #bitmapTex.SetMapName(r"E:\\Games\\Aerofly Scenery Examples\\aerofly_fs_2_sdk_scenery_workshop_20170714\\aerofly_fs_2_sdk_scenery_workshop\\kigm_kingman\\asphalt_dark_color.tif")
@@ -147,27 +253,9 @@ def createMaterial(customMaterial):
 
     return material
 
-#########################################################
-# Add Object To Layer
-#########################################################
-def addObjectToLayer(objectName, layerName):
-    # Does this layer alrady exist?
-    layer = MaxPlus.LayerManager.GetLayer(MaxPlus.WStr(layerName))
-
-    # If the layer doesn't exist, add it
-    if layer.GetUnwrappedPtr() is None:
-        layer = MaxPlus.LayerManager.CreateLayer(MaxPlus.WStr(layerName))
-
-    # Get the node and add it to the layer
-    node = MaxPlus.INode.GetINodeByName(objectName)
-    
-    if node is not None:
-        MaxPlus.Layer.AddToLayer(layer, node)
-
-
-#########################################################
+#------------------------------------------------------------------------------
 # Draw Runway
-#########################################################
+#------------------------------------------------------------------------------
 def drawRunway(x, y, length, width, angle, name):
     obj = MaxPlus.Factory.CreateObject(MaxPlus.SuperClassIds.Shape, MaxPlus.ClassIds.Rectangle)
     obj.ParameterBlock.Length.Value = length
@@ -179,17 +267,13 @@ def drawRunway(x, y, length, width, angle, name):
     node.Convert(MaxPlus.ClassIds.PolyMeshObject)
     addObjectToLayer(node.Name, "Runways")
 
-#########################################################
-# Combine Splines
-#########################################################
-def combineSplinnes(splineName):
-	#http://discourse.techart.online/t/python-maxplus-how-to-combine-two-meshes/5589/4
-	pass
 
-#########################################################
+#------------------------------------------------------------------------------
 # Draw Spline
-#########################################################
+#------------------------------------------------------------------------------
 def drawSpline(splineNodeArray, namePrefix, name, index, layer):
+    # Convert it one day
+    # https://gist.github.com/EricTRocks/e5105affcfd6726bb0ef2f5d3b043fbd
     for node in splineNodeArray:
         if node.render:
             if node.openLoop:
@@ -209,41 +293,38 @@ def drawSpline(splineNodeArray, namePrefix, name, index, layer):
                     maxScript("addKnot sp 1 #corner #line [{0}, {1}, 0]".format(node.x, node.y))
 
             if node.closeLoop:
+                splineName = getSplineName(namePrefix, index+1, name)
                 maxScript("close sp 1")
                 maxScript("updateShape sp")
                 maxScript("select sp")
-                maxScript("sp.name = \"{0} {1} {2}\"".format(namePrefix, index+1, name))
-
-                splineName = "{0} {1} {2}".format(namePrefix, index+1, name)
+                maxScript("sp.name = \"" + splineName + "\"")
                 addObjectToLayer(splineName, layer)
-                #maxScript("poly = convertToPoly(sp)")
 
-
-#########################################################
+#------------------------------------------------------------------------------
 # Draw Runways
-#########################################################
+#------------------------------------------------------------------------------
 def drawRunways():
     {% for runway in Runways -%}
     drawRunway({{runway.X}}, {{runway.Y}}, {{runway.Length}}, {{runway.Width}}, {{runway.Angle}}, "Runway {{runway.Index | Plus:1 }}")
     {% endfor -%}
 
-#########################################################
+#------------------------------------------------------------------------------
 # Draw Runway Decals
-#########################################################
+#------------------------------------------------------------------------------
 def drawRunwayDecals():
     {% for runway in Runways -%}
     drawSingleRunwayDecals("Runway {{runway.Index | Plus:1 }}")
     {% endfor -%}
 
-#########################################################
+#------------------------------------------------------------------------------
 # Draw Single Runway Decals
-#########################################################
+#------------------------------------------------------------------------------
 def drawSingleRunwayDecals(name):
     pass
 
-#########################################################
+#------------------------------------------------------------------------------
 # Draw DAT File Pavement Splines
-#########################################################
+#------------------------------------------------------------------------------
 def drawDATFilePavementSplines():
 
     {% for pavement in DATPavements -%}
@@ -257,15 +338,18 @@ def drawDATFilePavementSplines():
     drawSpline(splineNodeArray, "Pavement", pavementName, pavementIndex, "DAT File Pavements")
     {% endfor -%}
 
-#########################################################
+        # Finally, combine any splines that need to be combined
+        combineSplines()
+
+#------------------------------------------------------------------------------
 # Draw DSF File Pavement Splines
-#########################################################
+#------------------------------------------------------------------------------
 def drawDSFFilePavementSplines():
     pass
 
-#########################################################
+#------------------------------------------------------------------------------
 # Draw DSF File Building Splines
-#########################################################
+#------------------------------------------------------------------------------
 def drawDSFFileBuildingSplines():
 
     {% for building in Buildings -%}
@@ -279,33 +363,33 @@ def drawDSFFileBuildingSplines():
     drawSpline(splineNodeArray, "Building", buildingName, buildingIndex, "Buildings")
     {% endfor -%}
 
-#########################################################
+#------------------------------------------------------------------------------
 # Draw Signs
-#########################################################
+#------------------------------------------------------------------------------
 def drawSigns():
     pass
 
-#########################################################
+#------------------------------------------------------------------------------
 # Convert DAT File Pavement Splines To Editable Polys
-#########################################################
+#------------------------------------------------------------------------------
 def convertDATFilePavementSplinesToEditablePolys():
     pass
 
-#########################################################
+#------------------------------------------------------------------------------
 # Convert Linear Feature Splines To Editable Polys
-#########################################################
+#------------------------------------------------------------------------------
 def convertLinearFeaturesSplinesToEditablePolys():
     pass
 
-#########################################################
+#------------------------------------------------------------------------------
 # Convert DSF File Pavement Splines To Editable Polys
-#########################################################
+#------------------------------------------------------------------------------
 def convertDSFFilePavementSplinesToEditablePolys():
     pass
 
-#########################################################
+#------------------------------------------------------------------------------
 # Convert DSF File Building Splines To Editable Polys
-#########################################################
+#------------------------------------------------------------------------------
 def convertDSFFileBuildingSplinesToEditablePolys():
 
     {% for building in Buildings -%}
@@ -319,17 +403,17 @@ def convertDSFFileBuildingSplinesToEditablePolys():
     {% endfor -%}
 
 
-#########################################################
+#------------------------------------------------------------------------------
 # Texture Runways
-#########################################################
+#------------------------------------------------------------------------------
 def textureRunways():
     {% for runway in Runways -%}
     textureRunway("Runway {{runway.Index | Plus:1 }}", {{runway.Length}}, {{runway.Width}}, "{{runway.SurfaceType}}", "{{runway.ShoulderType}}")
     {% endfor -%}
 
-#########################################################
+#------------------------------------------------------------------------------
 # Texture Runway
-#########################################################
+#------------------------------------------------------------------------------
 def textureRunway(name, length, width, surfaceType, shoulderType):
     node = MaxPlus.INode.GetINodeByName(name)
     node.Material = materials["runwayDark"]
@@ -337,46 +421,46 @@ def textureRunway(name, length, width, surfaceType, shoulderType):
     node.AddModifier(unwrapUVWModifier)
     pass
 
-#########################################################
+#------------------------------------------------------------------------------
 # Texture Runway Decals
-#########################################################
+#------------------------------------------------------------------------------
 def textureRunwayDecals():
     pass
 
-#########################################################
+#------------------------------------------------------------------------------
 # Texture Runway Decals
-#########################################################
+#------------------------------------------------------------------------------
 def textureSingleRunwayDecals(name):
     pass
 
-#########################################################
+#------------------------------------------------------------------------------
 # Texture Pavements
-#########################################################
+#------------------------------------------------------------------------------
 def texturePavements():
     pass
 
-#########################################################
+#------------------------------------------------------------------------------
 # Texture Linear Features
-#########################################################
+#------------------------------------------------------------------------------
 def textureLinearFeatures():
     pass
 
-#########################################################
+#------------------------------------------------------------------------------
 # Boolean Union Runways
-#########################################################
+#------------------------------------------------------------------------------
 def booleanUnionRunways():
     pass
 
-#########################################################
+#------------------------------------------------------------------------------
 # Boolean Union Pavements
-#########################################################
+#------------------------------------------------------------------------------
 def booleanUnionPavements():
     pass
 
 
-#########################################################
+#------------------------------------------------------------------------------
 # Draw Airport Boundary Spline
-#########################################################
+#------------------------------------------------------------------------------
 def drawAirportBoundarySpline():
         splineNodeArray = []
     {% for node in AirportBoundary.Nodes -%}
@@ -384,9 +468,10 @@ def drawAirportBoundarySpline():
     {% endfor -%}
     drawSpline(splineNodeArray, "", "Airport Boundary", 0, "Airport Boundary")
 
-def maxScript(script):
-    return MaxPlus.Core.EvalMAXScript(script)
 
+#------------------------------------------------------------------------------
+# Main
+#------------------------------------------------------------------------------
 def main():
 
     # Reset the max file
