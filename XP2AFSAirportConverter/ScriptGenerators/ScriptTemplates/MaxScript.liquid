@@ -132,6 +132,23 @@ def addObjectToLayer(objectName, layerName):
         MaxPlus.Layer.AddToLayer(layer, node)
 
 #------------------------------------------------------------------------------
+# Get Nodes In Layer
+#
+# Gets all Nodes in a specific layer, by layer name
+#------------------------------------------------------------------------------
+def getNodesInLayer(layerName):
+
+    # Does this layer alrady exist?
+    layer = MaxPlus.LayerManager.GetLayer(MaxPlus.WStr(layerName))
+
+    if layer.GetUnwrappedPtr() is not None:
+        nodeList = layer.GetNodes()
+        return nodeList
+    else:
+        print("Layer does not exists")
+        return None
+
+#------------------------------------------------------------------------------
 # ObjectExists
 #
 # Gets whether an object exists by name
@@ -175,6 +192,9 @@ def setMaterialMap(material, materialSubMaps, mapId, bitmapPath):
 
 #------------------------------------------------------------------------------
 # Combine Splines
+#
+# Combines any Splines in the scene that have a name suffixed with "Attach" with
+# the Spline of the same name without the suffix "Attach"
 #------------------------------------------------------------------------------
 def combineSplines():
     sceneNodes = MaxPlus.Core.GetRootNode().Children
@@ -200,6 +220,42 @@ def combineSplines():
 
     for node in nodesToDelete:
         node.Delete()
+
+#------------------------------------------------------------------------------
+# ProBoolean Merge
+#
+# Given a NodeList and the name of a new Node, executes a ProBoolean merge
+# on the Node list, creating a new Node and retaining the Nodes passed in
+#------------------------------------------------------------------------------
+def proBooleanMerge(newNodeName, nodeList):
+
+	# ProBoolean sometimes crashes when booleaning things in a certain order
+	# randomising the array means that running this multiple times will usually allow it
+	# to work once
+	random.shuffle(nodeList)
+
+	maxScriptNodeNameArray = "nodeArray = #("
+	
+	i = 0
+	for node in nodeList:
+		if i > 0:
+			maxScriptNodeNameArray += "$'" + node.GetName() + "'"
+			if i < len(nodeList) -1:
+				maxScriptNodeNameArray += ","
+		i += 1
+		
+	maxScriptNodeNameArray = maxScriptNodeNameArray + ")"
+	
+	print(maxScriptNodeNameArray)
+	maxScript(maxScriptNodeNameArray)	
+		
+	# Copy the first node. It will be the destination for the boolean operation
+	newNode = nodeList[0].CreateCopy()
+	newNode.SetName(newNodeName)
+	
+	#https://help.autodesk.com/view/3DSMAX/2017/ENU/?guid=__files_GUID_4A79CA15_1146_4CB2_A520_FD55B4D7647D_htm
+	# 3 1 0 = Merge, Copy, Apply Operand Material
+	maxScript("ProBoolean.createBooleanObjects $'" + newNodeName + "' nodeArray 3 1 0")
 
 
 #------------------------------------------------------------------------------
@@ -304,6 +360,7 @@ def drawSpline(splineNodeArray, namePrefix, name, index, layer):
 # Draw Runways
 #------------------------------------------------------------------------------
 def drawRunways():
+    print("drawRunways")
     {% for runway in Runways -%}
     drawRunway({{runway.X}}, {{runway.Y}}, {{runway.Length}}, {{runway.Width}}, {{runway.Angle}}, "Runway {{runway.Index | Plus:1 }}")
     {% endfor -%}
@@ -312,6 +369,7 @@ def drawRunways():
 # Draw Runway Decals
 #------------------------------------------------------------------------------
 def drawRunwayDecals():
+    print("drawRunwayDecals")
     {% for runway in Runways -%}
     drawSingleRunwayDecals("Runway {{runway.Index | Plus:1 }}")
     {% endfor -%}
@@ -320,12 +378,13 @@ def drawRunwayDecals():
 # Draw Single Runway Decals
 #------------------------------------------------------------------------------
 def drawSingleRunwayDecals(name):
-    pass
+    print("drawSingleRunwayDecals")
 
 #------------------------------------------------------------------------------
 # Draw DAT File Pavement Splines
 #------------------------------------------------------------------------------
 def drawDATFilePavementSplines():
+    print("drawDATFilePavementSplines")
 
     {% for pavement in DATPavements -%}
     # Pavement Pavement {{pavement.Index | Plus:1 }} {{pavement.Name}}
@@ -345,12 +404,13 @@ def drawDATFilePavementSplines():
 # Draw DSF File Pavement Splines
 #------------------------------------------------------------------------------
 def drawDSFFilePavementSplines():
-    pass
+    print("drawDSFFilePavementSplines")
 
 #------------------------------------------------------------------------------
 # Draw DSF File Building Splines
 #------------------------------------------------------------------------------
 def drawDSFFileBuildingSplines():
+    print("drawDSFFileBuildingSplines")
 
     {% for building in Buildings -%}
     # Building{{building.Index | Plus:1 }} {{building.Name}}
@@ -367,30 +427,36 @@ def drawDSFFileBuildingSplines():
 # Draw Signs
 #------------------------------------------------------------------------------
 def drawSigns():
-    pass
+    print("drawSigns")
 
 #------------------------------------------------------------------------------
 # Convert DAT File Pavement Splines To Editable Polys
 #------------------------------------------------------------------------------
 def convertDATFilePavementSplinesToEditablePolys():
-    pass
+    print("convertDATFilePavementSplinesToEditablePolys")
+
+    dsfPavementNodes = getNodesInLayer("DAT File Pavements")
+
+    for node in dsfPavementNodes:
+        node.Convert(MaxPlus.ClassIds.PolyMeshObject)
 
 #------------------------------------------------------------------------------
 # Convert Linear Feature Splines To Editable Polys
 #------------------------------------------------------------------------------
 def convertLinearFeaturesSplinesToEditablePolys():
-    pass
+    print("convertLinearFeaturesSplinesToEditablePolys")
 
 #------------------------------------------------------------------------------
 # Convert DSF File Pavement Splines To Editable Polys
 #------------------------------------------------------------------------------
 def convertDSFFilePavementSplinesToEditablePolys():
-    pass
+    print("convertDSFFilePavementSplinesToEditablePolys")
 
 #------------------------------------------------------------------------------
 # Convert DSF File Building Splines To Editable Polys
 #------------------------------------------------------------------------------
 def convertDSFFileBuildingSplinesToEditablePolys():
+    print("convertDSFFileBuildingSplinesToEditablePolys")
 
     {% for building in Buildings -%}
 # Building{{building.Index | Plus:1 }} {{building.Name}}
@@ -407,6 +473,8 @@ def convertDSFFileBuildingSplinesToEditablePolys():
 # Texture Runways
 #------------------------------------------------------------------------------
 def textureRunways():
+    print("textureRunways")
+
     {% for runway in Runways -%}
     textureRunway("Runway {{runway.Index | Plus:1 }}", {{runway.Length}}, {{runway.Width}}, "{{runway.SurfaceType}}", "{{runway.ShoulderType}}")
     {% endfor -%}
@@ -425,48 +493,55 @@ def textureRunway(name, length, width, surfaceType, shoulderType):
 # Texture Runway Decals
 #------------------------------------------------------------------------------
 def textureRunwayDecals():
-    pass
+    print("textureRunwayDecals")
 
 #------------------------------------------------------------------------------
 # Texture Runway Decals
 #------------------------------------------------------------------------------
 def textureSingleRunwayDecals(name):
-    pass
+    print("textureSingleRunwayDecals")
 
 #------------------------------------------------------------------------------
 # Texture Pavements
 #------------------------------------------------------------------------------
 def texturePavements():
-    pass
+    print("texturePavements")
 
 #------------------------------------------------------------------------------
 # Texture Linear Features
 #------------------------------------------------------------------------------
 def textureLinearFeatures():
-    pass
+    print("textureLinearFeatures")
 
 #------------------------------------------------------------------------------
 # Boolean Union Runways
 #------------------------------------------------------------------------------
 def booleanUnionRunways():
-    pass
+    print("booleanUnionRunways")
 
 #------------------------------------------------------------------------------
 # Boolean Union Pavements
 #------------------------------------------------------------------------------
 def booleanUnionPavements():
-    pass
+    print("booleanUnionPavements")
 
 
 #------------------------------------------------------------------------------
 # Draw Airport Boundary Spline
 #------------------------------------------------------------------------------
 def drawAirportBoundarySpline():
+        print("drawAirportBoundarySpline")
         splineNodeArray = []
     {% for node in AirportBoundary.Nodes -%}
     splineNodeArray.append(SplineNode({{node.X}},{{node.Y}},toBool("{{node.IsBezier}}"),toBool("{{node.IsBezierCorner}}"),toBool("{{node.IsCurve}}"),{{node.BezierControl1X}},{{node.BezierControl1Y}},{{node.BezierControl2X}},{{node.BezierControl2Y}},toBool("{{node.OpenLoop}}"),toBool("{{node.CloseLoop}}"),toBool("{{node.Render}}")))
     {% endfor -%}
     drawSpline(splineNodeArray, "", "Airport Boundary", 0, "Airport Boundary")
+
+	
+#------------------------------------------------------------------------------
+# 
+#------------------------------------------------------------------------------
+#def 
 
 
 #------------------------------------------------------------------------------
