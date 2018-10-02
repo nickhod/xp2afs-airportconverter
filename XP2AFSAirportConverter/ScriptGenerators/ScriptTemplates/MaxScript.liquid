@@ -15,6 +15,7 @@
 
 import MaxPlus
 import pymxs
+import random
 
 # High level control of what to render
 processRunways = True
@@ -45,6 +46,8 @@ doTextureLinearFeatures = True
 doBooleanUnionRunways = True
 doBooleanUnionPavements = True
 doDrawAirportBoundarySpline = True
+doCreateAirportOutsideAreaInverse = True
+doCreateAirportOutsideArea = True
 doSaveFile = True
 
 saveFilePath = r"{{SaveFilePath}}"
@@ -229,33 +232,33 @@ def combineSplines():
 #------------------------------------------------------------------------------
 def proBooleanMerge(newNodeName, nodeList):
 
-	# ProBoolean sometimes crashes when booleaning things in a certain order
-	# randomising the array means that running this multiple times will usually allow it
-	# to work once
-	random.shuffle(nodeList)
+    # ProBoolean sometimes crashes when booleaning things in a certain order
+    # randomising the array means that running this multiple times will usually allow it
+    # to work once
+    random.shuffle(nodeList)
 
-	maxScriptNodeNameArray = "nodeArray = #("
-	
-	i = 0
-	for node in nodeList:
-		if i > 0:
-			maxScriptNodeNameArray += "$'" + node.GetName() + "'"
-			if i < len(nodeList) -1:
-				maxScriptNodeNameArray += ","
-		i += 1
-		
-	maxScriptNodeNameArray = maxScriptNodeNameArray + ")"
-	
-	print(maxScriptNodeNameArray)
-	maxScript(maxScriptNodeNameArray)	
-		
-	# Copy the first node. It will be the destination for the boolean operation
-	newNode = nodeList[0].CreateCopy()
-	newNode.SetName(newNodeName)
-	
-	#https://help.autodesk.com/view/3DSMAX/2017/ENU/?guid=__files_GUID_4A79CA15_1146_4CB2_A520_FD55B4D7647D_htm
-	# 3 1 0 = Merge, Copy, Apply Operand Material
-	maxScript("ProBoolean.createBooleanObjects $'" + newNodeName + "' nodeArray 3 1 0")
+    maxScriptNodeNameArray = "nodeArray = #("
+    
+    i = 0
+    for node in nodeList:
+        if i > 0:
+            maxScriptNodeNameArray += "$'" + node.GetName() + "'"
+            if i < len(nodeList) -1:
+                maxScriptNodeNameArray += ","
+        i += 1
+        
+    maxScriptNodeNameArray = maxScriptNodeNameArray + ")"
+    
+    print(maxScriptNodeNameArray)
+    maxScript(maxScriptNodeNameArray)	
+        
+    # Copy the first node. It will be the destination for the boolean operation
+    newNode = nodeList[0].CreateCopy()
+    newNode.SetName(newNodeName)
+    
+    #https://help.autodesk.com/view/3DSMAX/2017/ENU/?guid=__files_GUID_4A79CA15_1146_4CB2_A520_FD55B4D7647D_htm
+    # 3 1 0 = Merge, Copy, Apply Operand Material
+    maxScript("ProBoolean.createBooleanObjects $'" + newNodeName + "' nodeArray 3 1 0")
 
 
 #------------------------------------------------------------------------------
@@ -360,7 +363,7 @@ def drawSpline(splineNodeArray, namePrefix, name, index, layer):
 # Draw Runways
 #------------------------------------------------------------------------------
 def drawRunways():
-    print("drawRunways")
+        print("drawRunways")
     {% for runway in Runways -%}
     drawRunway({{runway.X}}, {{runway.Y}}, {{runway.Length}}, {{runway.Width}}, {{runway.Angle}}, "Runway {{runway.Index | Plus:1 }}")
     {% endfor -%}
@@ -369,7 +372,7 @@ def drawRunways():
 # Draw Runway Decals
 #------------------------------------------------------------------------------
 def drawRunwayDecals():
-    print("drawRunwayDecals")
+        print("drawRunwayDecals")
     {% for runway in Runways -%}
     drawSingleRunwayDecals("Runway {{runway.Index | Plus:1 }}")
     {% endfor -%}
@@ -378,13 +381,13 @@ def drawRunwayDecals():
 # Draw Single Runway Decals
 #------------------------------------------------------------------------------
 def drawSingleRunwayDecals(name):
-    print("drawSingleRunwayDecals")
+        print("drawSingleRunwayDecals")
 
 #------------------------------------------------------------------------------
 # Draw DAT File Pavement Splines
 #------------------------------------------------------------------------------
 def drawDATFilePavementSplines():
-    print("drawDATFilePavementSplines")
+        print("drawDATFilePavementSplines")
 
     {% for pavement in DATPavements -%}
     # Pavement Pavement {{pavement.Index | Plus:1 }} {{pavement.Name}}
@@ -410,7 +413,7 @@ def drawDSFFilePavementSplines():
 # Draw DSF File Building Splines
 #------------------------------------------------------------------------------
 def drawDSFFileBuildingSplines():
-    print("drawDSFFileBuildingSplines")
+        print("drawDSFFileBuildingSplines")
 
     {% for building in Buildings -%}
     # Building{{building.Index | Plus:1 }} {{building.Name}}
@@ -473,7 +476,7 @@ def convertDSFFileBuildingSplinesToEditablePolys():
 # Texture Runways
 #------------------------------------------------------------------------------
 def textureRunways():
-    print("textureRunways")
+        print("textureRunways")
 
     {% for runway in Runways -%}
     textureRunway("Runway {{runway.Index | Plus:1 }}", {{runway.Length}}, {{runway.Width}}, "{{runway.SurfaceType}}", "{{runway.ShoulderType}}")
@@ -537,12 +540,29 @@ def drawAirportBoundarySpline():
     {% endfor -%}
     drawSpline(splineNodeArray, "", "Airport Boundary", 0, "Airport Boundary")
 
-	
+    
 #------------------------------------------------------------------------------
 # 
 #------------------------------------------------------------------------------
-#def 
+def createAirportOutsideAreaInverse():
+    
+    print("createAirportOutsideAreaInverse")
+    datFilePavementNodes = getNodesInLayer("DAT File Pavements")
+    runwayNodes = getNodesInLayer("Runways")
 
+    finalNodeList = runwayNodes
+
+    for node in datFilePavementNodes:
+        finalNodeList.Append(node)
+
+    MaxPlus.LayerManager.SetCurrentLayer(MaxPlus.WStr("Airport Boundary"))
+    proBooleanMerge("Airport Outside Area Inverse", finalNodeList)
+
+#------------------------------------------------------------------------------
+# 
+#------------------------------------------------------------------------------
+def createAirportOutsideArea():
+    pass
 
 #------------------------------------------------------------------------------
 # Main
@@ -655,7 +675,14 @@ def main():
         drawSigns()
 
     if processGroundPoly:
-        drawAirportBoundarySpline()
+        if doDrawAirportBoundarySpline:
+            drawAirportBoundarySpline()
+
+        if doCreateAirportOutsideAreaInverse:
+            createAirportOutsideAreaInverse()
+
+        if doCreateAirportOutsideArea:
+            createAirportOutsideArea()
 
     if doSaveFile:
         maxScript("saveMaxFile \"{0}\" saveAsVersion:2016".format(saveFilePath))
