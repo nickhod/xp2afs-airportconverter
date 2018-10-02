@@ -238,24 +238,28 @@ def proBooleanMerge(newNodeName, nodeList):
     random.shuffle(nodeList)
 
     maxScriptNodeNameArray = "nodeArray = #("
-    
+
     i = 0
     for node in nodeList:
+        # There's a bug in ProBoolean that means it doesn't respect our request to copy nodes
+        # So we copy them here or they will be deleted
+		copyNode = node.CreateCopy()
+		copyNode.SetName(node.GetName())
         if i > 0:
             maxScriptNodeNameArray += "$'" + node.GetName() + "'"
             if i < len(nodeList) -1:
                 maxScriptNodeNameArray += ","
         i += 1
-        
+
     maxScriptNodeNameArray = maxScriptNodeNameArray + ")"
-    
+
     print(maxScriptNodeNameArray)
-    maxScript(maxScriptNodeNameArray)	
-        
+    maxScript(maxScriptNodeNameArray)
+
     # Copy the first node. It will be the destination for the boolean operation
     newNode = nodeList[0].CreateCopy()
     newNode.SetName(newNodeName)
-    
+
     #https://help.autodesk.com/view/3DSMAX/2017/ENU/?guid=__files_GUID_4A79CA15_1146_4CB2_A520_FD55B4D7647D_htm
     # 3 1 0 = Merge, Copy, Apply Operand Material
     maxScript("ProBoolean.createBooleanObjects $'" + newNodeName + "' nodeArray 3 1 0")
@@ -441,7 +445,10 @@ def convertDATFilePavementSplinesToEditablePolys():
     dsfPavementNodes = getNodesInLayer("DAT File Pavements")
 
     for node in dsfPavementNodes:
-        node.Convert(MaxPlus.ClassIds.PolyMeshObject)
+        # For whatever reason MaxScript is lots faster than the MaxPlus way of doing this
+        nodeName = "$'" + node.GetName() + "'"
+        maxScript("convertToPoly " + nodeName)
+        #node.Convert(MaxPlus.ClassIds.PolyMeshObject)
 
 #------------------------------------------------------------------------------
 # Convert Linear Feature Splines To Editable Polys
@@ -540,12 +547,12 @@ def drawAirportBoundarySpline():
     {% endfor -%}
     drawSpline(splineNodeArray, "", "Airport Boundary", 0, "Airport Boundary")
 
-    
+
 #------------------------------------------------------------------------------
-# 
+#
 #------------------------------------------------------------------------------
 def createAirportOutsideAreaInverse():
-    
+
     print("createAirportOutsideAreaInverse")
     datFilePavementNodes = getNodesInLayer("DAT File Pavements")
     runwayNodes = getNodesInLayer("Runways")
@@ -559,7 +566,7 @@ def createAirportOutsideAreaInverse():
     proBooleanMerge("Airport Outside Area Inverse", finalNodeList)
 
 #------------------------------------------------------------------------------
-# 
+#
 #------------------------------------------------------------------------------
 def createAirportOutsideArea():
     pass
