@@ -243,8 +243,8 @@ def proBooleanMerge(newNodeName, nodeList):
     for node in nodeList:
         # There's a bug in ProBoolean that means it doesn't respect our request to copy nodes
         # So we copy them here or they will be deleted
-		copyNode = node.CreateCopy()
-		copyNode.SetName(node.GetName())
+        copyNode = node.CreateCopy()
+        copyNode.SetName(node.GetName())
         if i > 0:
             maxScriptNodeNameArray += "$'" + node.GetName() + "'"
             if i < len(nodeList) -1:
