@@ -557,13 +557,27 @@ def createAirportOutsideAreaInverse():
     datFilePavementNodes = getNodesInLayer("DAT File Pavements")
     runwayNodes = getNodesInLayer("Runways")
 
+    # Create a node list of the DAT file pavements and
+    # runways
     finalNodeList = runwayNodes
 
     for node in datFilePavementNodes:
         finalNodeList.Append(node)
 
-    MaxPlus.LayerManager.SetCurrentLayer(MaxPlus.WStr("Airport Boundary"))
+    # Boolean all nodes together		
     proBooleanMerge("Airport Outside Area Inverse", finalNodeList)
+
+    # Move the new object to the Airport Boundary layer
+    addObjectToLayer("Airport Outside Area Inverse", "Airport Boundary")
+
+    # Get the new node
+    outsideAreaInverseNode = MaxPlus.INode.GetINodeByName("Airport Outside Area Inverse")
+
+    # Add an Edit Mesh Modifier to the new object
+    editMeshModifier = MaxPlus.Factory.CreateObjectModifier(MaxPlus.ClassIds.Edit_Mesh)
+    #editMeshModifier.ParameterBlock.OuterAmount.Value = buildingHeights[{{building.Index}}]
+    outsideAreaInverseNode.AddModifier(editMeshModifier)
+
 
 #------------------------------------------------------------------------------
 #
